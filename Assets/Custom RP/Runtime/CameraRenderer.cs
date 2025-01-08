@@ -6,7 +6,13 @@ public class CameraRenderer
 {
     ScriptableRenderContext context;
     Camera camera;
-
+    const string bufferName = "Render Camera";
+    
+    CommandBuffer buffer = new CommandBuffer 
+    {
+        name = bufferName
+    };
+    
     public void Render(ScriptableRenderContext context, Camera camera) 
     {
         this.context = context;
@@ -17,6 +23,12 @@ public class CameraRenderer
         Submit();
     }
     
+    void Setup () 
+    {
+        buffer.BeginSample(bufferName);
+        context.SetupCameraProperties(camera);
+    }
+    
     void DrawVisibleGeometry() 
     {
         context.DrawSkybox(camera);
@@ -24,10 +36,9 @@ public class CameraRenderer
     
     void Submit() 
     {
+        buffer.EndSample(bufferName);
         context.Submit();
     }
     
-    void Setup () {
-        context.SetupCameraProperties(camera);
-    }
+
 }
