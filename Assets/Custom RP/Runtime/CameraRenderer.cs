@@ -9,12 +9,23 @@ public class CameraRenderer
     const string bufferName = "Render Camera";
     CullingResults cullingResults;
     
+    static Material errorMaterial;
+    
     CommandBuffer buffer = new CommandBuffer 
     {
         name = bufferName
     };
     
     static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+    
+    static ShaderTagId[] legacyShaderTagIds = {
+        new ShaderTagId("Always"),
+        new ShaderTagId("ForwardBase"),
+        new ShaderTagId("PrepassBase"),
+        new ShaderTagId("Vertex"),
+        new ShaderTagId("VertexLMRGBM"),
+        new ShaderTagId("VertexLM")
+    };
     
     public void Render(ScriptableRenderContext context, Camera camera) 
     {
@@ -25,6 +36,7 @@ public class CameraRenderer
         
         Setup();
         DrawVisibleGeometry();
+        DrawUnsupportedShaders();
         Submit();
     }
     
@@ -51,8 +63,7 @@ public class CameraRenderer
             ref filteringSettings);
         
         context.DrawSkybox(camera);
-
-        // code duplication - bad!
+        
         sortingSettings.criteria = SortingCriteria.CommonTransparent;
         drawingSettings.sortingSettings = sortingSettings;
         filteringSettings.renderQueueRange = RenderQueueRange.transparent;
@@ -70,8 +81,9 @@ public class CameraRenderer
     }
     
     void ExecuteBuffer () {
-        // commands are copied, but buffer doesn't clear itself
         context.ExecuteCommandBuffer(buffer);
+        // commands are copied, but buffer doesn't clear itself
+        // have to do it manually
         buffer.Clear();
     }
 
@@ -84,6 +96,31 @@ public class CameraRenderer
         }
 
         return false;
+    }
+    
+    void DrawUnsupportedShaders()
+    {
+        if (errorMaterial == null) errorMaterial = new Material(Shader.Find("Hidden/InternalErrorShader"));
+        
+        var drawingSettings = new DrawingSettings
+        {
+            sortingSettings = new SortingSettings(camera),
+            overrideMaterial = errorMaterial
+        };
+
+
+        int counter = 1;
+        foreach (var tagId in legacyShaderTagIds)
+        {
+            drawingSettings.SetShaderPassName(counter, tagId);
+            counter++;
+        }
+        
+        var filteringSettings = FilteringSettings.defaultValue;
+        
+        context.DrawRenderers(
+            cullingResults, ref drawingSettings, ref filteringSettings
+        );
     }
     
 }
