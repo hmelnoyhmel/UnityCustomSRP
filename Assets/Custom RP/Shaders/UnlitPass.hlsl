@@ -3,6 +3,8 @@
 
 #include "../ShaderLibrary/Common.hlsl"
 
+float4 _BaseColor;
+
 // The main job of the vertex function is to convert the original vertex position to the correct space.
 float4 UnlitPassVertex(float3 positionOS : POSITION) : SV_POSITION
 {
@@ -12,7 +14,7 @@ float4 UnlitPassVertex(float3 positionOS : POSITION) : SV_POSITION
 
 float4 UnlitPassFragment() : SV_TARGET
 {
-    return 0.0f;
+    return _BaseColor;
 }
 
 #endif
