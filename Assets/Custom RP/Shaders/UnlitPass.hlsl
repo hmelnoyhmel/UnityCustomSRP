@@ -3,7 +3,9 @@
 
 #include "../ShaderLibrary/Common.hlsl"
 
-float4 _BaseColor;
+CBUFFER_START(UnityPerMaterial)
+    float4 _BaseColor;
+CBUFFER_END
 
 // The main job of the vertex function is to convert the original vertex position to the correct space.
 float4 UnlitPassVertex(float3 positionOS : POSITION) : SV_POSITION
