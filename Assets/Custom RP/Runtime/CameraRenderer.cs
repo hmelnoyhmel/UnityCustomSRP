@@ -9,22 +9,9 @@ public class CameraRenderer
     const string bufferName = "Render Camera";
     CullingResults cullingResults;
     
-    static Material errorMaterial;
-    
     CommandBuffer buffer = new CommandBuffer 
     {
         name = bufferName
-    };
-    
-    static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
-    
-    static ShaderTagId[] legacyShaderTagIds = {
-        new ShaderTagId("Always"),
-        new ShaderTagId("ForwardBase"),
-        new ShaderTagId("PrepassBase"),
-        new ShaderTagId("Vertex"),
-        new ShaderTagId("VertexLMRGBM"),
-        new ShaderTagId("VertexLM")
     };
     
     public void Render(ScriptableRenderContext context, Camera camera) 
@@ -33,19 +20,19 @@ public class CameraRenderer
         this.camera = camera;
 
         if (!Cull()) return;
-        
+
         Setup();
         DrawVisibleGeometry();
-        DrawUnsupportedShaders();
+        RenderUtils.DrawUnsupportedShaders(this.context, this.camera, cullingResults);
+        RenderUtils.DrawGizmos(this.context, this.camera);
         Submit();
     }
     
-    // Samples are used for profiling purposes
     void Setup () 
     {
         context.SetupCameraProperties(camera);
         buffer.ClearRenderTarget(true, true, Color.clear);
-        buffer.BeginSample(bufferName);
+        buffer.BeginSample(bufferName); // Samples are used for profiling purposes
         ExecuteBuffer();
     }
     
@@ -55,7 +42,7 @@ public class CameraRenderer
         {
             criteria = SortingCriteria.CommonOpaque
         };
-        var drawingSettings = new DrawingSettings(unlitShaderTagId, sortingSettings);
+        var drawingSettings = new DrawingSettings(RenderUtils.UnlitShaderTagId, sortingSettings);
         var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
         
         context.DrawRenderers(cullingResults, 
@@ -80,10 +67,11 @@ public class CameraRenderer
         context.Submit();
     }
     
-    void ExecuteBuffer () {
+    void ExecuteBuffer () 
+    {
         context.ExecuteCommandBuffer(buffer);
-        // commands are copied, but buffer doesn't clear itself
-        // have to do it manually
+        
+        // commands are copied, but buffer doesn't clear itself, have to do it manually
         buffer.Clear();
     }
 
@@ -96,31 +84,6 @@ public class CameraRenderer
         }
 
         return false;
-    }
-    
-    void DrawUnsupportedShaders()
-    {
-        if (errorMaterial == null) errorMaterial = new Material(Shader.Find("Hidden/InternalErrorShader"));
-        
-        var drawingSettings = new DrawingSettings
-        {
-            sortingSettings = new SortingSettings(camera),
-            overrideMaterial = errorMaterial
-        };
-
-
-        int counter = 1;
-        foreach (var tagId in legacyShaderTagIds)
-        {
-            drawingSettings.SetShaderPassName(counter, tagId);
-            counter++;
-        }
-        
-        var filteringSettings = FilteringSettings.defaultValue;
-        
-        context.DrawRenderers(
-            cullingResults, ref drawingSettings, ref filteringSettings
-        );
     }
     
 }
