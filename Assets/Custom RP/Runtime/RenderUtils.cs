@@ -1,5 +1,7 @@
+using System;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 
 public static class RenderUtils
@@ -19,6 +21,8 @@ public static class RenderUtils
     
     private static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
     public static ref readonly ShaderTagId UnlitShaderTagId => ref unlitShaderTagId;
+
+    public static string SampleName { get; private set; }
     
     public static void DrawUnsupportedShaders(ScriptableRenderContext context, Camera camera, CullingResults cullingResults)
     {
@@ -29,9 +33,8 @@ public static class RenderUtils
             sortingSettings = new SortingSettings(camera),
             overrideMaterial = errorMaterial
         };
-
-
-        int counter = 1;
+        
+        var counter = 1;
         foreach (var tagId in RenderUtils.legacyShaderTagIds)
         {
             drawingSettings.SetShaderPassName(counter, tagId);
@@ -52,6 +55,23 @@ public static class RenderUtils
             context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
         }
     }
+
+    public static void PrepareForSceneWindow(Camera camera)
+    {
+        // draws UI in scene view
+        if (camera.cameraType == CameraType.SceneView)
+            ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
+    }
+
+    public static void PrepareBuffer(CommandBuffer buffer, Camera camera)
+    {
+        Profiler.BeginSample("Editor Only");
+        // separates camera scopes if there's several cameras rendering
+        buffer.name = SampleName = camera.name;
+        Profiler.EndSample();
+    }
     
+#else
+    static const string SampleName => bufferName;
 #endif
 }
