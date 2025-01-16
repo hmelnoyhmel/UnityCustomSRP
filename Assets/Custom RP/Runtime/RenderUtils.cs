@@ -18,9 +18,12 @@ public static class RenderUtils
     };
     
     private static Material errorMaterial;
-    
+
     private static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+    private static ShaderTagId litShaderTagId = new ShaderTagId("CustomLit");
+    
     public static ref readonly ShaderTagId UnlitShaderTagId => ref unlitShaderTagId;
+    public static ref readonly ShaderTagId LitShaderTagId => ref litShaderTagId;
 
     public static string SampleName { get; private set; }
     
