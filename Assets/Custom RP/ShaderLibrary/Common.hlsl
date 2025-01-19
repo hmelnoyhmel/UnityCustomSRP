@@ -11,10 +11,16 @@
 #define UNITY_MATRIX_P glstate_matrix_projection
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
 // Unity requires UnityInput.hlsl include BEFORE SpaceTransforms.hlsl include
 #include "UnityInput.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
+
+float Square(float v)
+{
+    return v * v;
+}
 
 #endif
 
