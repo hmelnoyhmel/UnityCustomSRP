@@ -47,28 +47,28 @@ public class Shadows
     
     // Reserve space in the shadow atlas for the light's shadow map
     // and store the information needed to render them
-    public Vector2 ReserveDirectionalShadows(Light light, int visibleLightIndex)
+    public Vector4 ReserveDirectionalShadows(Light light, int visibleLightIndex)
     {
-        /*if (ShadowedDirectionalLightCount >= maxShadowedDirectionalLightCount) return;
-        if (light.shadows == LightShadows.None) return;
-        if (light.shadowStrength <= 0f) return;
-        if (!cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b)) return;*/
+        if (ShadowedDirectionalLightCount >= maxShadowedDirectionalLightCount) return Vector4.zero;
+        if (light.shadows == LightShadows.None) return Vector4.zero;
+        if (light.shadowStrength <= 0f) return Vector4.zero;
+        if (!cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b)) return Vector4.zero;
         
         
-        if (ShadowedDirectionalLightCount < maxShadowedDirectionalLightCount &&
+        /*if (ShadowedDirectionalLightCount < maxShadowedDirectionalLightCount &&
             light.shadows != LightShadows.None && 
             light.shadowStrength > 0f &&
             cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds bounds))
-        {
+        {*/
             ShadowedDirectionalLights[ShadowedDirectionalLightCount] =
                 new ShadowedDirectionalLight
                 {
                     visibleLightIndex = visibleLightIndex
                 };
             
-            return new Vector2(light.shadowStrength, ShadowedDirectionalLightCount++);
-        }
-        return Vector2.zero;
+            return new Vector4(light.shadowStrength, ShadowedDirectionalLightCount++);
+        //}
+        //return Vector2.zero;
     }
     
     public void Render() 
@@ -98,7 +98,7 @@ public class Shadows
         var tileSize = atlasSize / split;
         
         for (var i = 0; i < ShadowedDirectionalLightCount; i++)
-            RenderDirectionalShadows(i, split, atlasSize);
+            RenderDirectionalShadows(i, split, tileSize); // was atlasSize instead tileSize, fixed
         
         buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
         
@@ -146,7 +146,8 @@ public class Shadows
     
     Matrix4x4 ConvertToAtlasMatrix(Matrix4x4 matrix, Vector2 offset, int split) 
     {
-        if (SystemInfo.usesReversedZBuffer) {
+        if (SystemInfo.usesReversedZBuffer) 
+        {
             matrix.m20 = -matrix.m20;
             matrix.m21 = -matrix.m21;
             matrix.m22 = -matrix.m22;
