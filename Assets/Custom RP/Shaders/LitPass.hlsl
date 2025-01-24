@@ -80,6 +80,11 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 #endif
     
     float3 color = GetFinalLighting(surface, brdf);
+
+    /*DirectionalShadowData shadowData = GetDirectionalShadowData(0);
+    float val = GetDirectionalShadowAttenuation(shadowData, surface);
+    return val;*/
+    
     return float4(color, surface.alpha);
 }
 
