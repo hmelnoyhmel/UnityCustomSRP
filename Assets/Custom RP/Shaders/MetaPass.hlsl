@@ -6,6 +6,10 @@
 #include "../ShaderLibrary/Light.hlsl"
 #include "../ShaderLibrary/BRDF.hlsl"
 
+bool4 unity_MetaFragmentControl;
+float unity_OneOverOutputBoost;
+float unity_MaxOutputValue;
+
 struct Attributes
 {
     float3 positionOS : POSITION;
@@ -29,10 +33,6 @@ Varyings MetaPassVertex (Attributes input)
     return output;
 }
 
-bool4 unity_MetaFragmentControl;
-float unity_OneOverOutputBoost;
-float unity_MaxOutputValue;
-
 float4 MetaPassFragment (Varyings input) : SV_TARGET
 {
     float4 base = GetBase(input.baseUV);
@@ -50,6 +50,10 @@ float4 MetaPassFragment (Varyings input) : SV_TARGET
         meta = float4(brdf.diffuse, 1.0);
         meta.rgb += brdf.specular * brdf.roughness * 0.5;
         meta.rgb = min(PositivePow(meta.rgb, unity_OneOverOutputBoost), unity_MaxOutputValue);
+    }
+    else if (unity_MetaFragmentControl.y)
+    {
+        meta = float4(GetEmission(input.baseUV), 1.0);
     }
     return meta;
 }
