@@ -1711,7 +1711,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 6ddf7b3cb9fbbca4ba5295e80d8a96b8, type: 2}
+  - {fileID: 2100000, guid: c1c64878d80022144adceb93c528f68b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1755,7 +1755,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   baseColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
-  cutoff: 0.15
+  cutoff: 0.3
   metallic: 0
   smoothness: 0.5
 --- !u!1 &1019929795
@@ -1881,7 +1881,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   baseColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
-  cutoff: 0.15
+  cutoff: 0.5
   metallic: 0
   smoothness: 0.5
 --- !u!1 &1037235424
@@ -4182,7 +4182,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   baseColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
-  cutoff: 0.15
+  cutoff: 0.5
   metallic: 0
   smoothness: 0.5
 --- !u!1 &1586615491
@@ -4915,7 +4915,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   baseColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
-  cutoff: 0.15
+  cutoff: 0.7
   metallic: 0
   smoothness: 0.5
 --- !u!1 &1816864192

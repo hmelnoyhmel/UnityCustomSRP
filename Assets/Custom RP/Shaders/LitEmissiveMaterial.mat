@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: LitEmissive
+  m_Name: LitEmissiveMaterial
   m_Shader: {fileID: 4800000, guid: bdc7fa59075a3794990f99fc3079291d, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
