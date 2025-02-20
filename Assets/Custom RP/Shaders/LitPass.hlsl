@@ -73,11 +73,6 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface);
     float3 color = GetFinalLighting(surface, brdf, gi);
     color += GetEmission(input.baseUV);
-
-    /*DirectionalShadowData shadowData = GetDirectionalShadowData(0);
-    float val = GetDirectionalShadowAttenuation(shadowData, surface);
-    return val;*/
-    
     return float4(color, surface.alpha);
 }
 
