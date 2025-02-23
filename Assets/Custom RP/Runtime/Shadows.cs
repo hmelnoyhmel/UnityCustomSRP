@@ -45,6 +45,7 @@ public class Shadows
     
     private static string[] shadowMaskKeywords = 
     {
+        "_SHADOW_MASK_ALWAYS",
         "_SHADOW_MASK_DISTANCE"
     };
     
@@ -83,14 +84,20 @@ public class Shadows
         if (ShadowedDirectionalLightCount >= maxShadowedDirectionalLightCount) return Vector4.zero;
         if (light.shadows == LightShadows.None) return Vector4.zero;
         if (light.shadowStrength <= 0f) return Vector4.zero;
-        if (!cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b)) return Vector4.zero;
         
+        float maskChannel = -1;
         LightBakingOutput lightBaking = light.bakingOutput;
         
         if (lightBaking.lightmapBakeType == LightmapBakeType.Mixed &&
             lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask) 
         {
             useShadowMask = true;
+            maskChannel = lightBaking.occlusionMaskChannel;
+        }
+        
+        if (!cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b)) 
+        {
+            return new Vector4(-light.shadowStrength, 0f, 0f, maskChannel);
         }
         
         ShadowedDirectionalLights[ShadowedDirectionalLightCount] =
@@ -104,7 +111,8 @@ public class Shadows
         return new Vector4(
             light.shadowStrength, 
             settings.directional.cascadeCount * ShadowedDirectionalLightCount++,
-            light.shadowNormalBias);
+            light.shadowNormalBias, 
+            maskChannel);
         
     }
     
@@ -120,7 +128,10 @@ public class Shadows
                 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
         }
         buffer.BeginSample(bufferName);
-        SetKeywords(shadowMaskKeywords, useShadowMask ? 0 : -1);
+        
+        // disgusting 
+        SetKeywords(shadowMaskKeywords, useShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
+        
         buffer.EndSample(bufferName);
         ExecuteBuffer();
     }

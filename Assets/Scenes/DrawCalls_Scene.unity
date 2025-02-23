@@ -913,6 +913,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: c1c64878d80022144adceb93c528f68b, type: 2}
+  lightProbeVolume: {fileID: 0}
 --- !u!65 &511944924
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3604,7 +3605,7 @@ Light:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingLayerMask: 1
-  m_Lightmapping: 2
+  m_Lightmapping: 1
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
@@ -3844,6 +3845,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: fc6e50930fdc4ba44b75f0f138b33a9f, type: 2}
+  lightProbeVolume: {fileID: 0}
 --- !u!65 &1459774606
 BoxCollider:
   m_ObjectHideFlags: 0
