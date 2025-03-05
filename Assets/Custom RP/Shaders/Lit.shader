@@ -7,9 +7,15 @@ Shader "Custom RP/Lit"
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.15
         [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
         
+    	[NoScaleOffset] _MaskMap("Mask (MODS)", 2D) = "white" {}
         _Metallic ("Metallic", Range(0, 1)) = 0
+    	_Occlusion ("Occlusion", Range(0, 1)) = 1
 		_Smoothness ("Smoothness", Range(0, 1)) = 0.5
     	_Fresnel ("Fresnel", Range(0, 1)) = 1
+    	
+    	[NoScaleOffset] _NormalMap("Normals", 2D) = "bump" {}
+		_NormalScale("Normal Scale", Range(0, 1)) = 1
+    	
         [Toggle(_PREMULTIPLY_ALPHA)] _PremultiplyAlpha ("Premultiply Alpha", Float) = 0
         
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1
@@ -22,6 +28,9 @@ Shader "Custom RP/Lit"
     	
 	    [NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
 		[HDR] _EmissionColor("Emission", Color) = (0.0, 0.0, 0.0, 0.0)
+    	_DetailMap("Details", 2D) = "linearGrey" {}
+    	_DetailAlbedo("Detail Albedo", Range(0, 1)) = 1
+    	_DetailSmoothness("Detail Smoothness", Range(0, 1)) = 1
     	
 	    [HideInInspector] _MainTex("Texture for Lightmap", 2D) = "white" {}
 		[HideInInspector] _Color("Color for Lightmap", Color) = (0.5, 0.5, 0.5, 1.0)
