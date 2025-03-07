@@ -29,7 +29,9 @@ public class CameraRenderer
         // lighting & shadows
         buffer.BeginSample(RenderUtils.SampleName);
         ExecuteBuffer();
-        lighting.Setup(context, cullingResults, shadowSettings);
+        
+        lighting.Setup(context, cullingResults, shadowSettings); 
+        
         buffer.EndSample(RenderUtils.SampleName);
         
         Setup();
@@ -44,9 +46,6 @@ public class CameraRenderer
     {
         renderContext.SetupCameraProperties(activeCamera);
         
-        // viewport rect adjust cam render position
-        // tweak the numbers if experiencing artifacts
-        
         // clear flags are set in the editor
         // inside camera component
         var flags = activeCamera.clearFlags;
@@ -55,9 +54,7 @@ public class CameraRenderer
             flags <= CameraClearFlags.Color, 
             flags == CameraClearFlags.Color ? activeCamera.backgroundColor.linear : UnityEngine.Color.clear);
         
-        
-        
-        buffer.BeginSample(RenderUtils.SampleName); // Samples are used for profiling purposes
+        buffer.BeginSample(RenderUtils.SampleName); 
         ExecuteBuffer();
     }
     

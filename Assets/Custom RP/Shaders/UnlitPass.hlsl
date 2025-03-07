@@ -34,7 +34,7 @@ float4 UnlitPassFragment(Varyings input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
 
-    InputConfig config = GetInputConfig(input.baseUV, input.detailUV);
+    InputConfig config = GetInputConfig(input.baseUV);
     
     float4 base = GetBase(config);
     
