@@ -75,6 +75,6 @@ public static class RenderUtils
     }
     
 #else
-    static const string SampleName => bufferName;
+    public static string SampleName => bufferName;
 #endif
 }
