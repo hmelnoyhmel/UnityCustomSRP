@@ -8,13 +8,17 @@ public class CustomRenderPipeline : RenderPipeline
 
     private bool useDynamicBatching;
     private bool useGPUInstancing;
+    private bool useLightsPerObject;
 
     private ShadowSettings shadowSettings;
     
-    public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, ShadowSettings shadowSettings) 
+    public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, 
+        bool useSRPBatcher, bool useLightsPerObject, 
+        ShadowSettings shadowSettings) 
     {
         this.useDynamicBatching = useDynamicBatching;
         this.useGPUInstancing = useGPUInstancing;
+        this.useLightsPerObject = useLightsPerObject;
         GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
         GraphicsSettings.lightsUseLinearIntensity = true;
         this.shadowSettings = shadowSettings;
@@ -28,7 +32,9 @@ public class CustomRenderPipeline : RenderPipeline
     {
         foreach (var camera in cameras)
         {
-            rendererTest.Render(context, camera, useDynamicBatching, useGPUInstancing, shadowSettings);
+            rendererTest.Render(context, camera, 
+                useDynamicBatching, useGPUInstancing, 
+                useLightsPerObject, shadowSettings);
         }
     }
 }

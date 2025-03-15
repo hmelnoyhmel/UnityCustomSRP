@@ -81,9 +81,9 @@ public class Shadows
     // and store the information needed to render them
     public Vector4 ReserveDirectionalShadows(Light light, int visibleLightIndex)
     {
-        if (ShadowedDirectionalLightCount >= maxShadowedDirectionalLightCount) return Vector4.zero;
-        if (light.shadows == LightShadows.None) return Vector4.zero;
-        if (light.shadowStrength <= 0f) return Vector4.zero;
+        if (ShadowedDirectionalLightCount >= maxShadowedDirectionalLightCount) return new Vector4(0f, 0f, 0f, -1f);
+        if (light.shadows == LightShadows.None) return new Vector4(0f, 0f, 0f, -1f);
+        if (light.shadowStrength <= 0f) return new Vector4(0f, 0f, 0f, -1f);
         
         float maskChannel = -1;
         LightBakingOutput lightBaking = light.bakingOutput;
@@ -113,6 +113,21 @@ public class Shadows
             settings.directional.cascadeCount * ShadowedDirectionalLightCount++,
             light.shadowNormalBias, 
             maskChannel);
+        
+    }
+    
+    public Vector4 ReserveOtherShadows (Light light, int visibleLightIndex) 
+    {
+        if (light.shadows == LightShadows.None) return new Vector4(0f, 0f, 0f, -1f);
+        if (light.shadowStrength <= 0f)  return new Vector4(0f, 0f, 0f, -1f);
+        
+        LightBakingOutput lightBaking = light.bakingOutput;
+            
+        if (lightBaking.lightmapBakeType != LightmapBakeType.Mixed) return new Vector4(0f, 0f, 0f, -1f);
+        if (lightBaking.mixedLightingMode != MixedLightingMode.Shadowmask) return new Vector4(0f, 0f, 0f, -1f);
+            
+        useShadowMask = true;
+        return new Vector4(light.shadowStrength, 0f, 0f, lightBaking.occlusionMaskChannel);
         
     }
     
