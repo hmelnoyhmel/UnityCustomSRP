@@ -18,6 +18,8 @@ struct Varyings
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
+bool _ShadowPancaking;
+
 // The main job of the vertex function is to convert the original vertex position to the correct space.
 Varyings ShadowCasterPassVertex(Attributes input)
 {
@@ -27,12 +29,15 @@ Varyings ShadowCasterPassVertex(Attributes input)
     
     float3 positionWS = TransformObjectToWorld(input.positionOS);
     output.positionCS = TransformWorldToHClip(positionWS);
-    
-#if UNITY_REVERSED_Z
-    output.positionCS.z = min(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
-#else
-    output.positionCS.z = max(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
-#endif
+
+    if (_ShadowPancaking)
+    {
+        #if UNITY_REVERSED_Z
+        output.positionCS.z = min(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
+        #else
+        output.positionCS.z = max(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
+        #endif
+    }
     
     output.baseUV = TransformBaseUV(input.baseUV);
     return output;
