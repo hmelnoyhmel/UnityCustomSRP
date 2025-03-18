@@ -176,8 +176,8 @@ float SampleOtherShadowAtlas (float3 positionSTS, float3 bounds)
 float FilterOtherShadow(float3 positionSTS, float3 bounds)
 {
     #if defined(OTHER_FILTER_SETUP)
-    float weights[DIRECTIONAL_FILTER_SAMPLES];
-    float2 positions[DIRECTIONAL_FILTER_SAMPLES];
+    float weights[OTHER_FILTER_SAMPLES];
+    float2 positions[OTHER_FILTER_SAMPLES];
     float4 size = _ShadowAtlasSize.wwzz;
     OTHER_FILTER_SETUP(size, positionSTS.xy, weights, positions);
     float shadow = 0;
