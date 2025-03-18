@@ -18,8 +18,8 @@ public class CameraRenderer
     Lighting lighting = new Lighting();
     
     public void Render(ScriptableRenderContext context, Camera camera, 
-        bool useDynamicBatching, bool useGPUInstancing, 
-        bool useLightsPerObject, ShadowSettings shadowSettings) 
+        bool useDynamicBatching, bool useGPUInstancing, bool useLightsPerObject, 
+        ShadowSettings shadowSettings, PostFXSettings postFXSettings) 
     {
         renderContext = context;
         activeCamera = camera;

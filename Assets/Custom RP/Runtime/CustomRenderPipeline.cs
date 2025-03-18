@@ -11,11 +11,13 @@ public class CustomRenderPipeline : RenderPipeline
     private bool useLightsPerObject;
 
     private ShadowSettings shadowSettings;
+    private PostFXSettings postFXSettings;
     
     public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, 
         bool useSRPBatcher, bool useLightsPerObject, 
-        ShadowSettings shadowSettings) 
+        ShadowSettings shadowSettings, PostFXSettings postFXSettings) 
     {
+        this.postFXSettings = postFXSettings;
         this.useDynamicBatching = useDynamicBatching;
         this.useGPUInstancing = useGPUInstancing;
         this.useLightsPerObject = useLightsPerObject;
@@ -34,7 +36,7 @@ public class CustomRenderPipeline : RenderPipeline
         {
             rendererTest.Render(context, camera, 
                 useDynamicBatching, useGPUInstancing, 
-                useLightsPerObject, shadowSettings);
+                useLightsPerObject, shadowSettings, postFXSettings);
         }
     }
 }
