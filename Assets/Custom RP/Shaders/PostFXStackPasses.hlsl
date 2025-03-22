@@ -8,8 +8,8 @@ TEXTURE2D(_PostFXSource2);
 SAMPLER(sampler_linear_clamp);
 
 float4 _PostFXSource_TexelSize;
-bool _BloomBicubicUpsampling;
 float4 _BloomThreshold;
+bool _BloomBicubicUpsampling;
 float _BloomIntensity;
 
 struct Varyings
@@ -98,7 +98,7 @@ float4 BloomHorizontalPassFragment (Varyings input) : SV_TARGET
     for (int i = 0; i < 9; i++)
     {
         float offset = offsets[i] * 2.0 * GetSourceTexelSize().x;
-        color += GetSource(input.screenUV + float2(offset, 0.0)).rgb * weights[i];
+		color += GetSource(input.screenUV + float2(offset, 0.0)).rgb * weights[i];
     }
     
     return float4(color, 1.0);

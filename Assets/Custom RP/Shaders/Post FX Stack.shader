@@ -1,6 +1,5 @@
 Shader "Hidden/Custom RP/Post FX Stack"
 {
-	
 	SubShader
 	{
 		Cull Off
@@ -10,27 +9,17 @@ Shader "Hidden/Custom RP/Post FX Stack"
 		HLSLINCLUDE
 		#include "../ShaderLibrary/Common.hlsl"
 		#include "PostFXStackPasses.hlsl"
+		#pragma enable_d3d11_debug_symbols
 		ENDHLSL
-
-		Pass
-		{
-			Name "Copy"
-			
-			HLSLPROGRAM
-				#pragma target 3.5
-				#pragma vertex DefaultPassVertex
-				#pragma fragment CopyPassFragment
-			ENDHLSL
-		}
 
 		Pass 
 		{
-			Name "Bloom Vertical"
+			Name "Bloom Combine"
 			
 			HLSLPROGRAM
 				#pragma target 3.5
 				#pragma vertex DefaultPassVertex
-				#pragma fragment BloomVerticalPassFragment
+				#pragma fragment BloomCombinePassFragment
 			ENDHLSL
 		}
 
@@ -47,23 +36,34 @@ Shader "Hidden/Custom RP/Post FX Stack"
 
 		Pass 
 		{
-			Name "Bloom Combine"
-			
-			HLSLPROGRAM
-				#pragma target 3.5
-				#pragma vertex DefaultPassVertex
-				#pragma fragment BloomCombinePassFragment
-			ENDHLSL
-		}
-
-		Pass 
-		{
 			Name "Bloom Prefilter"
 			
 			HLSLPROGRAM
 				#pragma target 3.5
 				#pragma vertex DefaultPassVertex
 				#pragma fragment BloomPrefilterPassFragment
+			ENDHLSL
+		}
+
+		Pass 
+		{
+			Name "Bloom Vertical"
+			
+			HLSLPROGRAM
+				#pragma target 3.5
+				#pragma vertex DefaultPassVertex
+				#pragma fragment BloomVerticalPassFragment
+			ENDHLSL
+		}
+
+		Pass
+		{
+			Name "Copy"
+			
+			HLSLPROGRAM
+				#pragma target 3.5
+				#pragma vertex DefaultPassVertex
+				#pragma fragment CopyPassFragment
 			ENDHLSL
 		}
 	}

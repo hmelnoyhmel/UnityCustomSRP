@@ -15,10 +15,10 @@ MonoBehaviour:
   useDynamicBatching: 0
   useGPUInstancing: 1
   useSRPBatcher: 0
-  useLightsPerObject: 0
+  useLightsPerObject: 1
   shadows:
     maxDistance: 20
-    distanceFade: 0.1
+    distanceFade: 0.123
     directional:
       atlasSize: 4096
       filter: 3

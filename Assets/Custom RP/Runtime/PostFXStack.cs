@@ -12,10 +12,10 @@ public class PostFXStack
     
     enum Pass 
     {
-        BloomPrefilter,
         BloomCombine,
-        BloomVertical,
         BloomHorizontal,
+        BloomPrefilter,
+        BloomVertical,
         Copy
     }
 
@@ -75,6 +75,7 @@ void ApplySceneViewState() {};
     void Draw (RenderTargetIdentifier from, RenderTargetIdentifier to, Pass pass) 
     {
         buffer.SetGlobalTexture(fxSourceId, from);
+        
         buffer.SetRenderTarget(to, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
         
         buffer.DrawProcedural(
@@ -89,8 +90,8 @@ void ApplySceneViewState() {};
 
         PostFXSettings.BloomSettings bloom = settings.Bloom;
         
-        var width = camera.pixelWidth / 2; 
-        var height = camera.pixelHeight / 2;
+        int width = camera.pixelWidth / 2; 
+        int height = camera.pixelHeight / 2;
         
         if (
             bloom.maxIterations == 0 ||
@@ -111,14 +112,14 @@ void ApplySceneViewState() {};
         threshold.y -= threshold.x;
         buffer.SetGlobalVector(bloomThresholdId, threshold);
         
-        var format = RenderTextureFormat.Default;
+        RenderTextureFormat format = RenderTextureFormat.Default;
         buffer.GetTemporaryRT(bloomPrefilterId, width, height, 0, FilterMode.Bilinear, format);
         Draw(sourceId, bloomPrefilterId, Pass.BloomPrefilter);
         width /= 2;
         height /= 2;
         
-        var fromId = bloomPrefilterId; 
-        var toId = bloomPyramidId + 1;
+        int fromId = bloomPrefilterId; 
+        int toId = bloomPyramidId + 1;
         
         
         int i;
@@ -148,11 +149,9 @@ void ApplySceneViewState() {};
         }
         
         buffer.ReleaseTemporaryRT(bloomPrefilterId);
-
         buffer.SetGlobalFloat(
             bloomBucibicUpsamplingId, bloom.bicubicUpsampling ? 1f : 0f
         );
-        
         buffer.SetGlobalFloat(bloomIntensityId, 1f);
         
         if (i > 1)
@@ -163,18 +162,12 @@ void ApplySceneViewState() {};
             for (i -= 1; i > 0; i--)
             {
                 buffer.SetGlobalTexture(fxSource2Id, toId + 1);
-                Draw(fromId, toId, Pass.BloomCombine);
-                buffer.ReleaseTemporaryRT(fromId);
-                buffer.ReleaseTemporaryRT(toId + 1);
-                fromId -= toId;
-                toId -= 2;
+				Draw(fromId, toId, Pass.BloomCombine);
+				buffer.ReleaseTemporaryRT(fromId);
+				buffer.ReleaseTemporaryRT(toId + 1);
+				fromId = toId;
+				toId -= 2;
             }
-            
-            buffer.SetGlobalTexture(fxSource2Id, sourceId);
-            Draw(bloomPyramidId, BuiltinRenderTextureType.CameraTarget, Pass.BloomCombine);
-            buffer.ReleaseTemporaryRT(fromId);
-            
-            buffer.EndSample("Bloom");
         }
         else 
         {
@@ -182,7 +175,10 @@ void ApplySceneViewState() {};
         }
         
         buffer.SetGlobalFloat(bloomIntensityId, bloom.intensity);
-        
+        buffer.SetGlobalTexture(fxSource2Id, sourceId);
+        Draw(fromId, BuiltinRenderTextureType.CameraTarget, Pass.BloomCombine);
+        buffer.ReleaseTemporaryRT(fromId);
+        buffer.EndSample("Bloom");
     }
 
 }

@@ -38,7 +38,7 @@ public class PostFXSettings : ScriptableObject
         [Min(1f)]
         public int downscaleLimit;
         
-        [Min(0f)]
+        [Range(0f, 1f)]
         public float threshold;
 
         [Range(0f, 1f)]
