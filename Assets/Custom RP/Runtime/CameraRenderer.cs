@@ -21,7 +21,9 @@ public class CameraRenderer
     
     static int frameBufferId = Shader.PropertyToID("_CameraFrameBuffer");
     
-    public void Render(ScriptableRenderContext context, Camera camera, 
+    bool useHDR;
+    
+    public void Render(ScriptableRenderContext context, Camera camera, bool allowHDR,
         bool useDynamicBatching, bool useGPUInstancing, bool useLightsPerObject, 
         ShadowSettings shadowSettings, PostFXSettings postFXSettings) 
     {
@@ -32,12 +34,14 @@ public class CameraRenderer
         RenderUtils.PrepareForSceneWindow(activeCamera);
         if (!Cull(shadowSettings.maxDistance)) return;
         
+        useHDR = allowHDR && camera.allowHDR;
+        
         // lighting & shadows
         buffer.BeginSample(RenderUtils.SampleName);
         ExecuteBuffer();
         
         lighting.Setup(context, cullingResults, shadowSettings, useLightsPerObject); 
-        postFXStack.Setup(context, camera, postFXSettings);
+        postFXStack.Setup(context, camera, postFXSettings, useHDR);
         
         buffer.EndSample(RenderUtils.SampleName);
         
@@ -71,7 +75,8 @@ public class CameraRenderer
             
             buffer.GetTemporaryRT(
                 frameBufferId, activeCamera.pixelWidth, activeCamera.pixelHeight,
-                32, FilterMode.Bilinear, RenderTextureFormat.Default
+                32, FilterMode.Bilinear, 
+                useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default
             );
             
             buffer.SetRenderTarget(

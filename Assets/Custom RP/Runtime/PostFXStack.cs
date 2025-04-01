@@ -15,6 +15,7 @@ public class PostFXStack
         BloomCombine,
         BloomHorizontal,
         BloomPrefilter,
+        BloomPrefilterFireflies,
         BloomVertical,
         Copy
     }
@@ -29,10 +30,12 @@ public class PostFXStack
     private int bloomBucibicUpsamplingId = Shader.PropertyToID("_BloomBicubicUpsampling");
     private int bloomIntensityId = Shader.PropertyToID("_BloomIntensity");
     private int bloomPrefilterId = Shader.PropertyToID("_BloomPrefilter");
+    private int bloomPrefilterFirefliesId = Shader.PropertyToID("_BloomPrefilterFireflies");
     private int bloomThresholdId = Shader.PropertyToID("_BloomThreshold"); 
     private int fxSourceId = Shader.PropertyToID("_PostFXSource");
     private int fxSource2Id = Shader.PropertyToID("_PostFXSource2");
     
+    private bool useHDR;
     
     public bool IsActive => settings != null;
 
@@ -57,11 +60,12 @@ void ApplySceneViewState() {};
             Shader.PropertyToID("_BloomPyramid" + i);
     }
     
-    public void Setup (ScriptableRenderContext context, Camera camera, PostFXSettings settings) 
+    public void Setup (ScriptableRenderContext context, Camera camera, PostFXSettings settings, bool useHDR) 
     {
         this.context = context;
         this.camera = camera;
         this.settings = camera.cameraType <= CameraType.SceneView ? settings : null;
+        this.useHDR = useHDR;
         ApplySceneViewState();
     }
     
@@ -112,9 +116,11 @@ void ApplySceneViewState() {};
         threshold.y -= threshold.x;
         buffer.SetGlobalVector(bloomThresholdId, threshold);
         
-        RenderTextureFormat format = RenderTextureFormat.Default;
+        RenderTextureFormat format = useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
         buffer.GetTemporaryRT(bloomPrefilterId, width, height, 0, FilterMode.Bilinear, format);
-        Draw(sourceId, bloomPrefilterId, Pass.BloomPrefilter);
+        Draw(sourceId, bloomPrefilterId, 
+            bloom.fadeFireflies ? Pass.BloomPrefilterFireflies : Pass.BloomPrefilter);
+        
         width /= 2;
         height /= 2;
         

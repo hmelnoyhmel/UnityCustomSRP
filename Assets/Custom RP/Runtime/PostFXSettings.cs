@@ -38,7 +38,8 @@ public class PostFXSettings : ScriptableObject
         [Min(1f)]
         public int downscaleLimit;
         
-        [Range(0f, 1f)]
+        //[Range(0f, 1f)] - correct limits if not using HDR
+        [Min(0f)]
         public float threshold;
 
         [Range(0f, 1f)]
@@ -48,5 +49,7 @@ public class PostFXSettings : ScriptableObject
         public float intensity;
         
         public bool bicubicUpsampling;
+        
+        public bool fadeFireflies;
     }
 }
