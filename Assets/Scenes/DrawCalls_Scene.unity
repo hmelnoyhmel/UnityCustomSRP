@@ -1787,7 +1787,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseColor: {r: 0, g: 0, b: 0, a: 1}
-  emissionColor: {r: 1, g: 0.8822438, b: 0, a: 1}
+  emissionColor: {r: 8, g: 7.0579505, b: 0, a: 1}
   cutoff: 0.15
   metallic: 0
   smoothness: 0.5
@@ -1913,7 +1913,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseColor: {r: 0, g: 0, b: 0, a: 1}
-  emissionColor: {r: 0, g: 1, b: 0.96576595, a: 1}
+  emissionColor: {r: 0, g: 2, b: 1.9315319, a: 1}
   cutoff: 0.15
   metallic: 0
   smoothness: 0.5
@@ -4420,7 +4420,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!108 &1373285729
 Light:
   m_ObjectHideFlags: 0
@@ -6664,7 +6664,7 @@ Transform:
   m_GameObject: {fileID: 1885067031}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -4.656613e-10, w: 1}
-  m_LocalPosition: {x: 2.16, y: 1.44, z: 10.56}
+  m_LocalPosition: {x: 3.68, y: 1.238, z: 11.36}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6699,7 +6699,7 @@ Transform:
   m_GameObject: {fileID: 1965405511}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.513, y: 0, z: -1.083}
+  m_LocalPosition: {x: -2.452, y: 0, z: -1.381}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6718,7 +6718,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseColor: {r: 0, g: 1, b: 0.9830177, a: 0.39215687}
-  emissionColor: {r: 0, g: 0, b: 0, a: 1}
+  emissionColor: {r: 0, g: 0.8122524, b: 0.79951125, a: 1}
   cutoff: 0.15
   metallic: 0
   smoothness: 0.5
