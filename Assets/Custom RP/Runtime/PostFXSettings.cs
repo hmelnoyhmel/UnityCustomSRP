@@ -23,6 +23,51 @@ public class PostFXSettings : ScriptableObject
 
     public ToneMappingSettings ToneMapping => toneMapping;
     
+    [SerializeField]
+    ColorAdjustmentsSettings colorAdjustments = new ColorAdjustmentsSettings 
+    {
+        colorFilter = Color.white
+    };
+
+    public ColorAdjustmentsSettings ColorAdjustments => colorAdjustments;
+    
+    [SerializeField]
+    WhiteBalanceSettings whiteBalance = default;
+
+    public WhiteBalanceSettings WhiteBalance => whiteBalance;
+    
+    [SerializeField]
+    SplitToningSettings splitToning = new SplitToningSettings 
+    {
+        shadows = Color.gray,
+        highlights = Color.gray
+    };
+
+    public SplitToningSettings SplitToning => splitToning;
+    
+    [SerializeField]
+    ChannelMixerSettings channelMixer = new ChannelMixerSettings 
+    {
+        red = Vector3.right,
+        green = Vector3.up,
+        blue = Vector3.forward
+    };
+
+    public ChannelMixerSettings ChannelMixer => channelMixer;
+    
+    [SerializeField]
+    ShadowsMidtonesHighlightsSettings shadowsMidtonesHighlights = new ShadowsMidtonesHighlightsSettings 
+    {
+            shadows = Color.white,
+            midtones = Color.white,
+            highlights = Color.white,
+            shadowsEnd = 0.3f,
+            highlightsStart = 0.55f,
+            highLightsEnd = 1f
+    };
+
+    public ShadowsMidtonesHighlightsSettings ShadowsMidtonesHighlights => shadowsMidtonesHighlights;
+    
     public Material Material 
     {
         get 
@@ -73,7 +118,7 @@ public class PostFXSettings : ScriptableObject
     {
         public enum Mode
         {
-            None = -1,
+            None,
             ACES,
             Neutral,
             Reinhard
@@ -81,4 +126,83 @@ public class PostFXSettings : ScriptableObject
 
         public Mode mode;
     }
+
+    [Serializable]
+    public struct ColorAdjustmentsSettings
+    {
+        public float postExposure;
+
+        [Range(-100f, 100f)]
+        public float contrast;
+
+        [ColorUsage(false, true)]
+        public Color colorFilter;
+
+        [Range(-180f, 180f)]
+        public float hueShift;
+
+        [Range(-100f, 100f)]
+        public float saturation;
+        
+    }
+    
+    [Serializable]
+    public struct WhiteBalanceSettings
+    {
+        [Range(-100f, 100f)] 
+        public float temperature;
+        
+        [Range(-100f, 100f)] 
+        public float tint;
+    }
+    
+    [Serializable]
+    public struct SplitToningSettings
+    {
+        [ColorUsage(false)] 
+        public Color shadows; 
+        
+        [ColorUsage(false)] 
+        public Color highlights;
+
+        [Range(-100f, 100f)]
+        public float balance;
+    }
+    
+    [Serializable]
+    public struct ChannelMixerSettings
+    {
+
+        public Vector3 red;
+        public Vector3 green;
+        public Vector3 blue;
+    }
+
+    [Serializable]
+    public struct ShadowsMidtonesHighlightsSettings
+    {
+
+        [ColorUsage(false, true)] 
+        public Color shadows;
+
+        [ColorUsage(false, true)] 
+        public Color midtones;
+            
+        [ColorUsage(false, true)]
+        public Color highlights;
+
+        [Range(0f, 2f)]
+        public float shadowsStart;
+        
+        [Range(0f, 2f)]
+        public float shadowsEnd;
+            
+        [Range(0f, 2f)]
+        public float highlightsStart;
+            
+        [Range(0f, 2f)]
+        public float highLightsEnd;
+        
+    }
+    
 }
