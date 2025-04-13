@@ -9,7 +9,10 @@ CBUFFER_START(UnityPerDraw)
     real4 unity_LightData;
     real4 unity_LightIndices[2];
     float3 _WorldSpaceCameraPos;
+    float4 unity_OrthoParams;
     float4 _ProjectionParams;
+    float4 _ScreenParams;
+    float4 _ZBufferParams;
 
     float4 unity_ProbesOcclusion;
     float4 unity_SpecCube0_HDR;

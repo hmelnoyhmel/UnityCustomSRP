@@ -21,7 +21,7 @@ struct Attributes
 // This struct contains the data can vary between fragments of the same triangle
 struct Varyings
 {
-    float4 positionCS : SV_POSITION;
+    float4 positionCS_SS : SV_POSITION;
     float3 positionWS : VAR_POSITION;
     float3 normalWS : VAR_NORMAL;
     
@@ -44,7 +44,7 @@ Varyings LitPassVertex(Attributes input)
     TRANSFER_GI_DATA(input, output);
     
     output.positionWS = TransformObjectToWorld(input.positionOS);
-    output.positionCS = TransformWorldToHClip(output.positionWS);
+    output.positionCS_SS = TransformWorldToHClip(output.positionWS);
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
     
 #if defined(_NORMAL_MAP)
@@ -64,9 +64,11 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
 
-    ClipLOD(input.positionCS.xy, unity_LODFade.x);
+    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
 
-    InputConfig config = GetInputConfig(input.baseUV);
+    //return float4(config.fragment.depth.xxx / 20.0, 1.0); // depth visualization
+    
+    ClipLOD(config.fragment, unity_LODFade.x);
 
 #if defined(_MASK_MAP)
     config.useMask = true;
@@ -102,7 +104,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
     surface.occlusion = GetOcclusion(config);
     surface.smoothness = GetSmoothness(config);
     surface.fresnelStrength = GetFresnel(config);
-    surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0);
+    surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
 
 #if defined(_PREMULTIPLY_ALPHA)
     BRDF brdf = GetBRDF(surface, true);

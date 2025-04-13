@@ -53,14 +53,16 @@ public static class RenderUtils
     
     public static void DrawGizmosBeforeFX(ScriptableRenderContext context, Camera camera) 
     {
-        if (Handles.ShouldRenderGizmos()) {
+        if (Handles.ShouldRenderGizmos()) 
+        {
             context.DrawGizmos(camera, GizmoSubset.PreImageEffects);
         }
     }
     
     public static void DrawGizmosAfterFX(ScriptableRenderContext context, Camera camera) 
     {
-        if (Handles.ShouldRenderGizmos()) {
+        if (Handles.ShouldRenderGizmos()) 
+        {
             context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
         }
     }
