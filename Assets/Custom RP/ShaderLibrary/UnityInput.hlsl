@@ -1,4 +1,4 @@
-#ifndef CUSTOM_UNITY_INPUT_INCLUDED
+﻿#ifndef CUSTOM_UNITY_INPUT_INCLUDED
 #define CUSTOM_UNITY_INPUT_INCLUDED
 
 CBUFFER_START(UnityPerDraw)
@@ -6,16 +6,16 @@ CBUFFER_START(UnityPerDraw)
     float4x4 unity_WorldToObject;
     float4 unity_LODFade;
     real4 unity_WorldTransformParams;
+
+    float4 unity_RenderingLayer;
+
     real4 unity_LightData;
     real4 unity_LightIndices[2];
-    float3 _WorldSpaceCameraPos;
-    float4 unity_OrthoParams;
-    float4 _ProjectionParams;
-    float4 _ScreenParams;
-    float4 _ZBufferParams;
 
     float4 unity_ProbesOcclusion;
+
     float4 unity_SpecCube0_HDR;
+
     float4 unity_LightmapST;
     float4 unity_DynamicLightmapST;
 
@@ -40,5 +40,11 @@ float4x4 unity_prev_MatrixM;
 float4x4 unity_prev_MatrixIM;
 float4x4 glstate_matrix_projection;
 
-#endif
+float3 _WorldSpaceCameraPos;
 
+float4 unity_OrthoParams;
+float4 _ProjectionParams;
+float4 _ScreenParams;
+float4 _ZBufferParams;
+
+#endif

@@ -1,4 +1,4 @@
-#ifndef CUSTOM_SURFACE_INCLUDED
+﻿#ifndef CUSTOM_SURFACE_INCLUDED
 #define CUSTOM_SURFACE_INCLUDED
 
 struct Surface
@@ -15,6 +15,7 @@ struct Surface
     float smoothness;
     float fresnelStrength;
     float dither;
+    uint renderingLayerMask;
 };
 
 #endif

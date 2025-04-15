@@ -1,20 +1,32 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 [CanEditMultipleObjects]
 [CustomEditorForRenderPipeline(typeof(Light), typeof(CustomRenderPipelineAsset))]
 public class CustomLightEditor : LightEditor
 {
-    public override void OnInspectorGUI() 
+    private static readonly GUIContent renderingLayerMaskLabel =
+        new("Rendering Layer Mask", "Functional version of above property.");
+
+    public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        
-        if (settings.lightType.hasMultipleDifferentValues && 
-            (LightType)settings.lightType.enumValueIndex != LightType.Spot)
-            return;
-        
-        settings.DrawInnerAndOuterSpotAngle();
+        RenderingLayerMaskDrawer.Draw(
+            settings.renderingLayerMask, renderingLayerMaskLabel
+        );
+
+        if (!settings.lightType.hasMultipleDifferentValues &&
+            (LightType)settings.lightType.enumValueIndex == LightType.Spot)
+            settings.DrawInnerAndOuterSpotAngle();
+
         settings.ApplyModifiedProperties();
-        
+
+        var light = target as Light;
+        if (light.cullingMask != -1)
+            EditorGUILayout.HelpBox(
+                light.type == LightType.Directional
+                    ? "Culling Mask only affects shadows."
+                    : "Culling Mask only affects shadow unless Lights Per Objects is on.",
+                MessageType.Warning);
     }
 }

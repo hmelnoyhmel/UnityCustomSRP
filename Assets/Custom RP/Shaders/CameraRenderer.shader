@@ -1,4 +1,4 @@
-Shader "Hidden/Custom RP/Camera Renderer" {
+﻿Shader "Hidden/Custom RP/Camera Renderer" {
 	
 	SubShader {
 		Cull Off
@@ -13,13 +13,15 @@ Shader "Hidden/Custom RP/Camera Renderer" {
 		Pass {
 			Name "Copy"
 
+			Blend [_CameraSrcBlend] [_CameraDstBlend]
+
 			HLSLPROGRAM
 				#pragma target 3.5
 				#pragma vertex DefaultPassVertex
 				#pragma fragment CopyPassFragment
 			ENDHLSL
 		}
-
+		
 		Pass {
 			Name "Copy Depth"
 
