@@ -5,10 +5,6 @@ using UnityEngine.Rendering;
 
 partial class CameraRenderer
 {
-    partial void DrawGizmosBeforeFX();
-
-    partial void DrawGizmosAfterFX();
-
     partial void DrawUnsupportedShaders();
 
     partial void PrepareForSceneWindow();
@@ -30,34 +26,7 @@ partial class CameraRenderer
     private static Material errorMaterial;
 
     private string SampleName { get; set; }
-
-    partial void DrawGizmosBeforeFX()
-    {
-        if (Handles.ShouldRenderGizmos())
-        {
-            if (useIntermediateBuffer)
-            {
-                Draw(depthAttachmentId, BuiltinRenderTextureType.CameraTarget, true);
-                ExecuteBuffer();
-            }
-
-            context.DrawGizmos(camera, GizmoSubset.PreImageEffects);
-        }
-    }
-
-    partial void DrawGizmosAfterFX()
-    {
-        if (Handles.ShouldRenderGizmos())
-        {
-            if (postFXStack.IsActive)
-            {
-                Draw(depthAttachmentId, BuiltinRenderTextureType.CameraTarget, true);
-                ExecuteBuffer();
-            }
-
-            context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
-        }
-    }
+    
 
     partial void DrawUnsupportedShaders()
     {
