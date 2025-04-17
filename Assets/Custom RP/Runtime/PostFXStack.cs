@@ -1,11 +1,10 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 using static PostFXSettings;
 
 public partial class PostFXStack
 {
-    private const string bufferName = "Post FX";
-
     private const string
         fxaaQualityLowKeyword = "FXAA_QUALITY_LOW",
         fxaaQualityMediumKeyword = "FXAA_QUALITY_MEDIUM";
@@ -25,10 +24,7 @@ public partial class PostFXStack
 
     private readonly int bloomPyramidId;
 
-    private readonly CommandBuffer buffer = new()
-    {
-        name = bufferName
-    };
+    CommandBuffer buffer;
 
     private readonly int
         colorGradingLUTId = Shader.PropertyToID("_ColorGradingLUT"),
@@ -83,7 +79,7 @@ public partial class PostFXStack
     public bool IsActive => settings != null;
 
     public void Setup(
-        ScriptableRenderContext context, Camera camera, Vector2Int bufferSize,
+        Camera camera, Vector2Int bufferSize,
         PostFXSettings settings, bool keepAlpha, bool useHDR, int colorLUTResolution,
         CameraSettings.FinalBlendMode finalBlendMode,
         CameraBufferSettings.BicubicRescalingMode bicubicRescaling,
@@ -96,14 +92,15 @@ public partial class PostFXStack
         this.colorLUTResolution = colorLUTResolution;
         this.keepAlpha = keepAlpha;
         this.useHDR = useHDR;
-        this.context = context;
         this.camera = camera;
         this.settings = camera.cameraType <= CameraType.SceneView ? settings : null;
         ApplySceneViewState();
     }
 
-    public void Render(int sourceId)
+    public void Render(RenderGraphContext context, int sourceId)
     {
+        buffer = context.cmd;
+        
         if (DoBloom(sourceId))
         {
             DoFinal(bloomResultId);
@@ -114,7 +111,7 @@ public partial class PostFXStack
             DoFinal(sourceId);
         }
 
-        context.ExecuteCommandBuffer(buffer);
+        context.renderContext.ExecuteCommandBuffer(buffer);
         buffer.Clear();
     }
 

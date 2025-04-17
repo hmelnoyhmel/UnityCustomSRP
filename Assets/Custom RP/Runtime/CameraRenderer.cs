@@ -6,8 +6,6 @@ public partial class CameraRenderer
 {
     public const float renderScaleMin = 0.1f, renderScaleMax = 2f;
 
-    private const string bufferName = "Render Camera";
-
     private static readonly ShaderTagId
         unlitShaderTagId = new("SRPDefaultUnlit"),
         litShaderTagId = new("CustomLit");
@@ -28,11 +26,8 @@ public partial class CameraRenderer
         SystemInfo.copyTextureSupport > CopyTextureSupport.None;
 
     private static readonly Rect fullViewRect = new(0f, 0f, 1f, 1f);
-
-    private readonly CommandBuffer buffer = new()
-    {
-        name = bufferName
-    };
+    
+    CommandBuffer buffer;
 
     private readonly Lighting lighting = new();
 
@@ -75,17 +70,26 @@ public partial class CameraRenderer
     public void Render(
         RenderGraph renderGraph, ScriptableRenderContext context, Camera camera,
         CameraBufferSettings bufferSettings,
-        bool useDynamicBatching, bool useGPUInstancing, bool useLightsPerObject,
-        ShadowSettings shadowSettings, PostFXSettings postFXSettings,
+        bool useLightsPerObject, ShadowSettings shadowSettings, PostFXSettings postFXSettings,
         int colorLUTResolution)
     {
         this.context = context;
         this.camera = camera;
-        
-        var crpCamera = camera.GetComponent<CustomRenderPipelineCamera>();
-        var cameraSettings =
-            crpCamera ? crpCamera.Settings : defaultCameraSettings;
 
+        ProfilingSampler cameraSampler;
+        CameraSettings cameraSettings;
+        if (camera.TryGetComponent(out CustomRenderPipelineCamera crpCamera))
+        {
+            cameraSampler = crpCamera.Sampler;
+            cameraSettings = crpCamera.Settings;
+        }
+        else
+        {
+            cameraSampler = ProfilingSampler.Get(camera.cameraType);
+            cameraSettings = defaultCameraSettings;
+        }
+        
+        
         if (camera.cameraType == CameraType.Reflection)
         {
             useColorTexture = bufferSettings.copyColorReflection;
@@ -101,7 +105,6 @@ public partial class CameraRenderer
 
         var renderScale = cameraSettings.GetRenderScale(bufferSettings.renderScale);
         useScaledRendering = renderScale < 0.99f || renderScale > 1.01f;
-        PrepareBuffer();
         PrepareForSceneWindow();
         if (!Cull(shadowSettings.maxDistance)) return;
 
@@ -117,45 +120,57 @@ public partial class CameraRenderer
             bufferSize.x = camera.pixelWidth;
             bufferSize.y = camera.pixelHeight;
         }
-
-        buffer.BeginSample(SampleName);
-        buffer.SetGlobalVector(bufferSizeId, new Vector4(
-            1f / bufferSize.x, 1f / bufferSize.y, bufferSize.x, bufferSize.y));
-        ExecuteBuffer();
-        lighting.Setup(
-            context, cullingResults, shadowSettings, useLightsPerObject,
-            cameraSettings.maskLights ? cameraSettings.renderingLayerMask : -1);
-
+        
         bufferSettings.fxaa.enabled &= cameraSettings.allowFXAA;
         postFXStack.Setup(
-            context, camera, bufferSize, postFXSettings, cameraSettings.keepAlpha, useHDR,
+            camera, bufferSize, postFXSettings, cameraSettings.keepAlpha, useHDR,
             colorLUTResolution, cameraSettings.finalBlendMode,
             bufferSettings.bicubicRescaling, bufferSettings.fxaa);
-        buffer.EndSample(SampleName);
-        Setup();
-        DrawVisibleGeometry(
-            useDynamicBatching, useGPUInstancing, useLightsPerObject,
-            cameraSettings.renderingLayerMask);
-        DrawUnsupportedShaders();
         
-        var cameraSampler = new ProfilingSampler(camera.name);
+        useIntermediateBuffer = useScaledRendering ||
+                                useColorTexture || useDepthTexture || postFXStack.IsActive;
+        
         var renderGraphParameters = new RenderGraphParameters
         {
             commandBuffer = CommandBufferPool.Get(),
             currentFrameIndex = Time.frameCount,
             executionName = cameraSampler.name,
+            rendererListCulling = true,
             scriptableRenderContext = context
         };
+        buffer = renderGraphParameters.commandBuffer;
         
         renderGraph.BeginRecording(renderGraphParameters);
         using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
         {
             // Add passes here.
             
-            // Second param is used to store data needed by the pass.
-            // using RenderGraphBuilder builder = renderGraph.AddRenderPass("Test Pass", out CameraSettings data);
-            // builder.SetRenderFunc((CameraSettings data, RenderGraphContext context) => { });
+            LightingPass.Record(
+                renderGraph, lighting,
+                cullingResults, shadowSettings, useLightsPerObject,
+                cameraSettings.maskLights ? cameraSettings.renderingLayerMask : -1);
 
+            SetupPass.Record(renderGraph, useIntermediateBuffer, useHDR, bufferSize, camera);
+            
+            // opaque pass
+            GeometryPass.Record(
+                renderGraph, camera, cullingResults,
+                useLightsPerObject, cameraSettings.renderingLayerMask, true);
+
+            SkyboxPass.Record(renderGraph, camera);
+
+            if (useColorTexture || useDepthTexture)
+            {
+                CopyAttachmentsPass.Record(renderGraph, this);
+            }
+
+            // transparent pass
+            GeometryPass.Record(
+                renderGraph, camera, cullingResults,
+                useLightsPerObject, cameraSettings.renderingLayerMask, false);
+            
+            UnsupportedShadersPass.Record(renderGraph, camera, cullingResults);
+            
             if (postFXStack.IsActive)
             {
                 PostFXPass.Record(renderGraph, postFXStack);
@@ -169,8 +184,8 @@ public partial class CameraRenderer
         }
         renderGraph.EndRecordingAndExecute();
 
-        Cleanup();
-        Submit();
+        context.ExecuteCommandBuffer(renderGraphParameters.commandBuffer);
+        context.Submit();
         CommandBufferPool.Release(renderGraphParameters.commandBuffer);
     }
 
@@ -186,46 +201,11 @@ public partial class CameraRenderer
         return false;
     }
 
-    private void Setup()
-    {
-        context.SetupCameraProperties(camera);
-        var flags = camera.clearFlags;
-
-        useIntermediateBuffer = useScaledRendering ||
-                                useColorTexture || useDepthTexture || postFXStack.IsActive;
-        if (useIntermediateBuffer)
-        {
-            if (flags > CameraClearFlags.Color) flags = CameraClearFlags.Color;
-            buffer.GetTemporaryRT(
-                colorAttachmentId, bufferSize.x, bufferSize.y,
-                0, FilterMode.Bilinear, useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default);
-            buffer.GetTemporaryRT(
-                depthAttachmentId, bufferSize.x, bufferSize.y,
-                32, FilterMode.Point, RenderTextureFormat.Depth);
-            buffer.SetRenderTarget(
-                colorAttachmentId,
-                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                depthAttachmentId,
-                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-        }
-
-        buffer.ClearRenderTarget(
-            flags <= CameraClearFlags.Depth,
-            flags <= CameraClearFlags.Color,
-            flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
-        buffer.BeginSample(SampleName);
-        buffer.SetGlobalTexture(colorTextureId, missingTexture);
-        buffer.SetGlobalTexture(depthTextureId, missingTexture);
-        ExecuteBuffer();
-    }
-
     private void Cleanup()
     {
         lighting.Cleanup();
         if (useIntermediateBuffer)
         {
-            buffer.ReleaseTemporaryRT(colorAttachmentId);
-            buffer.ReleaseTemporaryRT(depthAttachmentId);
             if (useColorTexture) buffer.ReleaseTemporaryRT(colorTextureId);
             if (useDepthTexture) buffer.ReleaseTemporaryRT(depthTextureId);
         }
@@ -233,7 +213,6 @@ public partial class CameraRenderer
 
     private void Submit()
     {
-        buffer.EndSample(SampleName);
         ExecuteBuffer();
         context.Submit();
     }
@@ -244,50 +223,9 @@ public partial class CameraRenderer
         buffer.Clear();
     }
 
-    private void DrawVisibleGeometry(
-        bool useDynamicBatching, bool useGPUInstancing, bool useLightsPerObject,
-        int renderingLayerMask)
-    {
-        var lightsPerObjectFlags =
-            useLightsPerObject ? PerObjectData.LightData | PerObjectData.LightIndices : PerObjectData.None;
-        var sortingSettings = new SortingSettings(camera)
-        {
-            criteria = SortingCriteria.CommonOpaque
-        };
-        var drawingSettings = new DrawingSettings(
-            unlitShaderTagId, sortingSettings)
-        {
-            enableDynamicBatching = useDynamicBatching,
-            enableInstancing = useGPUInstancing,
-            perObjectData =
-                PerObjectData.ReflectionProbes |
-                PerObjectData.Lightmaps | PerObjectData.ShadowMask |
-                PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
-                PerObjectData.LightProbeProxyVolume |
-                PerObjectData.OcclusionProbeProxyVolume |
-                lightsPerObjectFlags
-        };
-        drawingSettings.SetShaderPassName(1, litShaderTagId);
-
-        var filteringSettings = new FilteringSettings(
-            RenderQueueRange.opaque, renderingLayerMask: (uint)renderingLayerMask);
-
-        context.DrawRenderers(
-            cullingResults, ref drawingSettings, ref filteringSettings);
-
-        context.DrawSkybox(camera);
-        if (useColorTexture || useDepthTexture) CopyAttachments();
-
-        sortingSettings.criteria = SortingCriteria.CommonTransparent;
-        drawingSettings.sortingSettings = sortingSettings;
-        filteringSettings.renderQueueRange = RenderQueueRange.transparent;
-
-        context.DrawRenderers(
-            cullingResults, ref drawingSettings, ref filteringSettings);
-    }
-
     public void CopyAttachments()
     {
+        ExecuteBuffer();
         if (useColorTexture)
         {
             buffer.GetTemporaryRT(

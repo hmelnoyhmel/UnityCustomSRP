@@ -1,9 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Rendering;
 
 [CreateAssetMenu(menuName = "Rendering/Custom Render Pipeline")]
-public partial class CustomRenderPipelineAsset : RenderPipelineAsset
+public partial class CustomRenderPipelineAsset : RenderPipelineAsset<CustomRenderPipeline>
 {
+    
     public enum ColorLUTResolution
     {
         _16 = 16,
@@ -24,8 +26,6 @@ public partial class CustomRenderPipelineAsset : RenderPipelineAsset
     };
 
     [SerializeField] private bool
-        useDynamicBatching = true,
-        useGPUInstancing = true,
         useSRPBatcher = true,
         useLightsPerObject = true;
 
@@ -37,11 +37,18 @@ public partial class CustomRenderPipelineAsset : RenderPipelineAsset
 
     [SerializeField] private Shader cameraRendererShader;
 
+    [Header("Deprecated Settings")]
+    [SerializeField, Tooltip("Dynamic batching is no longer used.")]
+    bool useDynamicBatching;
+
+    [SerializeField, Tooltip("GPU instancing is always enabled.")]
+    bool useGPUInstancing;
+    
     protected override RenderPipeline CreatePipeline()
     {
         return new CustomRenderPipeline(
-            cameraBuffer, useDynamicBatching, useGPUInstancing, useSRPBatcher,
-            useLightsPerObject, shadows, postFXSettings, (int)colorLUTResolution,
+            cameraBuffer, useSRPBatcher, useLightsPerObject, 
+            shadows, postFXSettings, (int)colorLUTResolution,
             cameraRendererShader);
     }
 }

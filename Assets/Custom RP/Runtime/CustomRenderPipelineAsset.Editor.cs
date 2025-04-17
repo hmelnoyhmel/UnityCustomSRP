@@ -1,4 +1,6 @@
-﻿partial class CustomRenderPipelineAsset
+﻿using UnityEngine.Rendering;
+
+partial class CustomRenderPipelineAsset
 {
 #if UNITY_EDITOR
 

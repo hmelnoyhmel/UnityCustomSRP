@@ -12428,6 +12428,7 @@ GameObject:
   - component: {fileID: 1037235427}
   - component: {fileID: 1037235426}
   - component: {fileID: 1037235425}
+  - component: {fileID: 1037235428}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -12509,6 +12510,32 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -167.876, z: 0}
+--- !u!114 &1037235428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1037235424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80a620e3887926748a4ca5f9e82a6c68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  settings:
+    copyColor: 1
+    copyDepth: 1
+    renderingLayerMask: -1
+    maskLights: 0
+    renderScaleMode: 0
+    renderScale: 1
+    overridePostFX: 0
+    postFXSettings: {fileID: 11400000, guid: c65b5833875847a45ac3b630f2278d96, type: 2}
+    allowFXAA: 0
+    keepAlpha: 0
+    finalBlendMode:
+      source: 1
+      destination: 0
 --- !u!1 &1115912795
 GameObject:
   m_ObjectHideFlags: 0
