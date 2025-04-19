@@ -45,9 +45,11 @@ public class SetupPass
         cmd.Clear();
     }
 
-    public static void Record(
+    public static CameraRendererTextures Record(
         RenderGraph renderGraph, 
         bool useIntermediateAttachments,
+        bool copyColor,
+        bool copyDepth,
         bool useHDR,
         Vector2Int attachmentSize,
         Camera camera)
@@ -56,10 +58,16 @@ public class SetupPass
             sampler.name, 
             out SetupPass pass,
             sampler);
+        
         pass.useIntermediateAttachments = useIntermediateAttachments;
         pass.attachmentSize = attachmentSize;
         pass.camera = camera;
         pass.clearFlags = camera.clearFlags;
+
+        TextureHandle colorAttachment;
+        TextureHandle depthAttachment;
+        TextureHandle colorCopy = default;
+        TextureHandle depthCopy = default;
         
         if (useIntermediateAttachments)
         {
@@ -67,31 +75,48 @@ public class SetupPass
             {
                 pass.clearFlags = CameraClearFlags.Color;
             }
+            
+            // reusable variable for texture setup
+            var desc = new TextureDesc(attachmentSize.x, attachmentSize.y)
+            {
+                colorFormat = SystemInfo.GetGraphicsFormat(useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
+                name = "Color Attachment"
+            };
+            // colorAttachment is a TextureHandle
+            colorAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc)); 
+            pass.colorAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc)); 
+            if (copyColor)
+            {
+                desc.name = "Color Copy";
+                colorCopy = renderGraph.CreateTexture(desc);
+            }
+            
+            desc.depthBufferBits = DepthBits.Depth32;
+            desc.name = "Depth Attachment";
+            depthAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc));
+            pass.depthAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc));
+            if (copyDepth)
+            {
+                desc.name = "Depth Copy";
+                depthCopy = renderGraph.CreateTexture(desc);
+            }
         }
         else
         {
+            colorAttachment =
+                builder.WriteTexture(renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget));
             pass.colorAttachment = 
                 builder.WriteTexture(renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget));
-            
+            depthAttachment = 
+                builder.WriteTexture(renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget));
             pass.depthAttachment = 
                 builder.WriteTexture(renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget));
         }
         
-        // reusable variable for texture setup
-        var desc = new TextureDesc(attachmentSize.x, attachmentSize.y)
-        {
-            colorFormat = SystemInfo.GetGraphicsFormat(useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
-            name = "Color Attachment"
-        };
-        
-        // colorAttachment is a TextureHandle
-        pass.colorAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc)); 
-        
-        desc.depthBufferBits = DepthBits.Depth32;
-        desc.name = "Depth Attachment";
-        pass.depthAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc));
-        
         builder.AllowPassCulling(false);
         builder.SetRenderFunc<SetupPass>((pass, context) => pass.Render(context));
+        
+        return new CameraRendererTextures(
+            colorAttachment, depthAttachment, colorCopy, depthCopy);
     }
 }

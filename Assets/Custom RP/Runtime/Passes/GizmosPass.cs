@@ -9,25 +9,35 @@ public class GizmosPass
     
     static readonly ProfilingSampler sampler = new("Gizmos");
     
-    CameraRenderer renderer;
+    bool requiresDepthCopy;
+
+    CameraRendererCopier copier;
+
+    TextureHandle depthAttachment;
 
     void Render(RenderGraphContext context)
     {
-        if (renderer.useIntermediateBuffer)
+        CommandBuffer buffer = context.cmd;
+        ScriptableRenderContext renderContext = context.renderContext;
+        
+        if (requiresDepthCopy)
         {
-            renderer.Draw(
-                CameraRenderer.depthAttachmentId, BuiltinRenderTextureType.CameraTarget,
-                true);
-            renderer.ExecuteBuffer();
+            copier.CopyByDrawing(
+                buffer, depthAttachment, BuiltinRenderTextureType.CameraTarget, true);
+            renderContext.ExecuteCommandBuffer(buffer);
+            buffer.Clear();
         }
-        context.renderContext.DrawGizmos(renderer.camera, GizmoSubset.PreImageEffects);
-        context.renderContext.DrawGizmos(renderer.camera, GizmoSubset.PostImageEffects);
+        renderContext.DrawGizmos(copier.Camera, GizmoSubset.PreImageEffects);
+        renderContext.DrawGizmos(copier.Camera, GizmoSubset.PostImageEffects);
     }
 #endif
     
   
     [Conditional("UNITY_EDITOR")]
-    public static void Record(RenderGraph renderGraph, CameraRenderer renderer)
+    public static void Record(RenderGraph renderGraph, 
+        bool useIntermediateBuffer,
+        CameraRendererCopier copier,
+        in CameraRendererTextures textures)
     {
 #if UNITY_EDITOR
         if (Handles.ShouldRenderGizmos())
@@ -37,7 +47,13 @@ public class GizmosPass
                 out GizmosPass pass,
                 sampler);
             
-            pass.renderer = renderer;
+            pass.requiresDepthCopy = useIntermediateBuffer;
+            pass.copier = copier;
+            if (useIntermediateBuffer)
+            {
+                pass.depthAttachment = builder.ReadTexture(textures.depthAttachment);
+            }
+            
             builder.SetRenderFunc<GizmosPass>((pass, context) => pass.Render(context));
         }
 #endif

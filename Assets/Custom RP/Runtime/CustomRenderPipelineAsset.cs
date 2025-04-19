@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 [CreateAssetMenu(menuName = "Rendering/Custom Render Pipeline")]
-public partial class CustomRenderPipelineAsset : RenderPipelineAsset<CustomRenderPipeline>
+public class CustomRenderPipelineAsset : RenderPipelineAsset<CustomRenderPipeline>
 {
     
     public enum ColorLUTResolution

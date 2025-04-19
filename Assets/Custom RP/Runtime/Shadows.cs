@@ -7,30 +7,30 @@ public class Shadows
     private const int maxShadowedDirLightCount = 4, maxShadowedOtherLightCount = 16;
     private const int maxCascades = 4;
 
-    private static readonly string[] directionalFilterKeywords =
+    private static readonly GlobalKeyword[] directionalFilterKeywords =
     {
-        "_DIRECTIONAL_PCF3",
-        "_DIRECTIONAL_PCF5",
-        "_DIRECTIONAL_PCF7"
+        GlobalKeyword.Create("_DIRECTIONAL_PCF3"),
+            GlobalKeyword.Create("_DIRECTIONAL_PCF5"),
+                GlobalKeyword.Create("_DIRECTIONAL_PCF7")
     };
 
-    private static readonly string[] otherFilterKeywords =
+    private static readonly GlobalKeyword[] otherFilterKeywords =
     {
-        "_OTHER_PCF3",
-        "_OTHER_PCF5",
-        "_OTHER_PCF7"
+        GlobalKeyword.Create("_OTHER_PCF3"),
+            GlobalKeyword.Create("_OTHER_PCF5"),
+                GlobalKeyword.Create("_OTHER_PCF7")
     };
 
-    private static readonly string[] cascadeBlendKeywords =
+    private static readonly GlobalKeyword[] cascadeBlendKeywords =
     {
-        "_CASCADE_BLEND_SOFT",
-        "_CASCADE_BLEND_DITHER"
+        GlobalKeyword.Create("_CASCADE_BLEND_SOFT"),
+            GlobalKeyword.Create("_CASCADE_BLEND_DITHER")
     };
 
-    private static readonly string[] shadowMaskKeywords =
+    private static readonly GlobalKeyword[] shadowMaskKeywords =
     {
-        "_SHADOW_MASK_ALWAYS",
-        "_SHADOW_MASK_DISTANCE"
+        GlobalKeyword.Create("_SHADOW_MASK_ALWAYS"),
+            GlobalKeyword.Create("_SHADOW_MASK_DISTANCE")
     };
 
     private static readonly int
@@ -74,26 +74,43 @@ public class Shadows
     private int shadowedDirLightCount, shadowedOtherLightCount;
 
     private bool useShadowMask;
+    
+    TextureHandle directionalAtlas, otherAtlas;
 
     public void Setup(
-        RenderGraphContext context, CullingResults cullingResults,
+        CullingResults cullingResults,
         ShadowSettings settings)
     {
-        buffer = context.cmd;
-        this.context = context.renderContext;
         this.cullingResults = cullingResults;
         this.settings = settings;
         shadowedDirLightCount = shadowedOtherLightCount = 0;
         useShadowMask = false;
     }
 
-    public void Cleanup()
+    public ShadowTextures GetRenderTextures(
+        RenderGraph renderGraph,
+        RenderGraphBuilder builder)
     {
-        buffer.ReleaseTemporaryRT(dirShadowAtlasId);
-        if (shadowedOtherLightCount > 0) buffer.ReleaseTemporaryRT(otherShadowAtlasId);
-        ExecuteBuffer();
-    }
+        int atlasSize = (int)settings.directional.atlasSize;
+        var desc = new TextureDesc(atlasSize, atlasSize)
+        {
+            depthBufferBits = DepthBits.Depth32,
+            isShadowMap = true,
+            name = "Directional Shadow Atlas"
+        };
+        directionalAtlas = shadowedDirLightCount > 0 ?
+            builder.WriteTexture(renderGraph.CreateTexture(desc)) :
+            renderGraph.defaultResources.defaultShadowTexture;
 
+        atlasSize = (int)settings.other.atlasSize;
+        desc.width = desc.height = atlasSize;
+        desc.name = "Other Shadow Atlas";
+        otherAtlas = shadowedOtherLightCount > 0 ?
+            builder.WriteTexture(renderGraph.CreateTexture(desc)) :
+            renderGraph.defaultResources.defaultShadowTexture;
+        return new ShadowTextures(directionalAtlas, otherAtlas);
+    }
+    
     public Vector4 ReserveDirectionalShadows(Light light, int visibleLightIndex)
     {
         if (
@@ -165,18 +182,19 @@ public class Shadows
         return data;
     }
 
-    public void Render()
+    public void Render(RenderGraphContext context)
     {
+        buffer = context.cmd;
+        this.context = context.renderContext;
+        
         if (shadowedDirLightCount > 0)
             RenderDirectionalShadows();
-        else
-            buffer.GetTemporaryRT(
-                dirShadowAtlasId, 1, 1,
-                32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
+        
         if (shadowedOtherLightCount > 0)
             RenderOtherShadows();
-        else
-            buffer.SetGlobalTexture(otherShadowAtlasId, dirShadowAtlasId);
+        
+        buffer.SetGlobalTexture(dirShadowAtlasId, directionalAtlas);
+        buffer.SetGlobalTexture(otherShadowAtlasId, otherAtlas);
         
         SetKeywords(shadowMaskKeywords,
             useShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
@@ -194,11 +212,8 @@ public class Shadows
         var atlasSize = (int)settings.directional.atlasSize;
         atlasSizes.x = atlasSize;
         atlasSizes.y = 1f / atlasSize;
-        buffer.GetTemporaryRT(
-            dirShadowAtlasId, atlasSize, atlasSize,
-            32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
         buffer.SetRenderTarget(
-            dirShadowAtlasId,
+            directionalAtlas,
             RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
         buffer.ClearRenderTarget(true, false, Color.clear);
         buffer.SetGlobalFloat(shadowPancakingId, 1f);
@@ -275,11 +290,8 @@ public class Shadows
         var atlasSize = (int)settings.other.atlasSize;
         atlasSizes.z = atlasSize;
         atlasSizes.w = 1f / atlasSize;
-        buffer.GetTemporaryRT(
-            otherShadowAtlasId, atlasSize, atlasSize,
-            32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
         buffer.SetRenderTarget(
-            otherShadowAtlasId,
+            otherAtlas,
             RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
         buffer.ClearRenderTarget(true, false, Color.clear);
         buffer.SetGlobalFloat(shadowPancakingId, 0f);
@@ -421,13 +433,12 @@ public class Shadows
         return offset;
     }
 
-    private void SetKeywords(string[] keywords, int enabledIndex)
+    private void SetKeywords(GlobalKeyword[] keywords, int enabledIndex)
     {
         for (var i = 0; i < keywords.Length; i++)
-            if (i == enabledIndex)
-                buffer.EnableShaderKeyword(keywords[i]);
-            else
-                buffer.DisableShaderKeyword(keywords[i]);
+        {
+            buffer.SetKeyword(keywords[i], i == enabledIndex);
+        }
     }
 
     private void ExecuteBuffer()

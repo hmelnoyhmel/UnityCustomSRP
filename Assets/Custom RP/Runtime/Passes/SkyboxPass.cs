@@ -15,7 +15,10 @@ public class SkyboxPass
         context.renderContext.DrawSkybox(camera);
     }
 
-    public static void Record(RenderGraph renderGraph, Camera camera)
+    public static void Record(
+        RenderGraph renderGraph, 
+        Camera camera,
+        in CameraRendererTextures textures)
     {
         if (camera.clearFlags == CameraClearFlags.Skybox)
         {
@@ -25,6 +28,8 @@ public class SkyboxPass
                 sampler);
             
             pass.camera = camera;
+            builder.ReadWriteTexture(textures.colorAttachment);
+            builder.ReadTexture(textures.depthAttachment);
             builder.SetRenderFunc<SkyboxPass>((pass, context) => pass.Render(context));
         }
     }

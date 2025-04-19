@@ -14,7 +14,10 @@ public class CameraSettings
 
     public bool copyColor = true, copyDepth = true;
 
-    [RenderingLayerMaskField] public int renderingLayerMask = -1;
+    [HideInInspector, Obsolete("Use newRenderingLayerMask instead.")]
+    public int renderingLayerMask = -1;
+    
+    public RenderingLayerMask newRenderingLayerMask = -1;
 
     public bool maskLights;
 
