@@ -123,7 +123,7 @@ public class CameraRenderer
             
             ShadowTextures shadowTextures = LightingPass.Record(
                 renderGraph, cullingResults, shadowSettings, useLightsPerObject,
-                cameraSettings.maskLights ? cameraSettings.renderingLayerMask : -1);
+                cameraSettings.maskLights ? cameraSettings.newRenderingLayerMask : -1);
 
             CameraRendererTextures textures = 
                 SetupPass.Record(renderGraph, useIntermediateBuffer, useColorTexture, 
@@ -132,7 +132,7 @@ public class CameraRenderer
             // opaque pass
             GeometryPass.Record(
                 renderGraph, camera, cullingResults,
-                useLightsPerObject, cameraSettings.renderingLayerMask, 
+                useLightsPerObject, cameraSettings.newRenderingLayerMask, 
                 true, textures, shadowTextures);
 
             SkyboxPass.Record(renderGraph, camera, textures);
@@ -146,7 +146,7 @@ public class CameraRenderer
             // transparent pass
             GeometryPass.Record(
                 renderGraph, camera, cullingResults,
-                useLightsPerObject, cameraSettings.renderingLayerMask, 
+                useLightsPerObject, cameraSettings.newRenderingLayerMask, 
                 false, textures, shadowTextures);
             
             UnsupportedShadersPass.Record(renderGraph, camera, cullingResults);

@@ -93,7 +93,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: c27033eb74cb63e46a704c28f3bed04d, type: 2}
   m_LightingSettings: {fileID: 4890085278179872738, guid: 574be2a352a768d488159934b37466cf, type: 2}
 --- !u!196 &4
 NavMeshSettings:
@@ -12525,7 +12525,7 @@ MonoBehaviour:
   settings:
     copyColor: 1
     copyDepth: 1
-    renderingLayerMask: -1
+    renderingLayerMask: 0
     newRenderingLayerMask:
       serializedVersion: 0
       m_Bits: 4294967295

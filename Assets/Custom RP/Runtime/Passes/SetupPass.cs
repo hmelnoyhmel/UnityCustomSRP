@@ -63,9 +63,7 @@ public class SetupPass
         pass.attachmentSize = attachmentSize;
         pass.camera = camera;
         pass.clearFlags = camera.clearFlags;
-
-        TextureHandle colorAttachment;
-        TextureHandle depthAttachment;
+        
         TextureHandle colorCopy = default;
         TextureHandle depthCopy = default;
         
@@ -83,7 +81,6 @@ public class SetupPass
                 name = "Color Attachment"
             };
             // colorAttachment is a TextureHandle
-            colorAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc)); 
             pass.colorAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc)); 
             if (copyColor)
             {
@@ -93,7 +90,6 @@ public class SetupPass
             
             desc.depthBufferBits = DepthBits.Depth32;
             desc.name = "Depth Attachment";
-            depthAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc));
             pass.depthAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc));
             if (copyDepth)
             {
@@ -103,11 +99,7 @@ public class SetupPass
         }
         else
         {
-            colorAttachment =
-                builder.WriteTexture(renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget));
-            pass.colorAttachment = 
-                builder.WriteTexture(renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget));
-            depthAttachment = 
+            pass.colorAttachment =
                 builder.WriteTexture(renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget));
             pass.depthAttachment = 
                 builder.WriteTexture(renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget));
@@ -117,6 +109,6 @@ public class SetupPass
         builder.SetRenderFunc<SetupPass>((pass, context) => pass.Render(context));
         
         return new CameraRendererTextures(
-            colorAttachment, depthAttachment, colorCopy, depthCopy);
+            pass.colorAttachment, pass.depthAttachment, colorCopy, depthCopy);
     }
 }

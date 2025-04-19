@@ -34,7 +34,8 @@ public class GizmosPass
     
   
     [Conditional("UNITY_EDITOR")]
-    public static void Record(RenderGraph renderGraph, 
+    public static void Record(
+        RenderGraph renderGraph, 
         bool useIntermediateBuffer,
         CameraRendererCopier copier,
         in CameraRendererTextures textures)

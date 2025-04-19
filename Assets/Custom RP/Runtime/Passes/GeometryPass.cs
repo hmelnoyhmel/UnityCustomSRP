@@ -22,9 +22,15 @@ public class GeometryPass
         context.cmd.Clear();
     }
 
-    public static void Record(RenderGraph renderGraph, Camera camera, 
-        CullingResults cullingResults, bool useLightsPerObject, int renderingLayerMask, 
-        bool opaque, in CameraRendererTextures textures, in ShadowTextures shadowTextures)
+    public static void Record(
+        RenderGraph renderGraph, 
+        Camera camera, 
+        CullingResults cullingResults, 
+        bool useLightsPerObject, 
+        uint renderingLayerMask, 
+        bool opaque, 
+        in CameraRendererTextures textures, 
+        in ShadowTextures shadowTextures)
     {
         ProfilingSampler sampler = opaque ? samplerOpaque : samplerTransparent;
         
@@ -46,14 +52,14 @@ public class GeometryPass
                     PerObjectData.LightProbe |
                     PerObjectData.OcclusionProbe |
                     PerObjectData.LightProbeProxyVolume |
-                    PerObjectData.OcclusionProbeProxyVolume |
-                    (useLightsPerObject ?
+                    PerObjectData.OcclusionProbeProxyVolume, //|
+                    /*(useLightsPerObject ?
                         PerObjectData.LightData | PerObjectData.LightIndices :
-                        PerObjectData.None),
+                        PerObjectData.None),*/
                 
                 renderQueueRange = opaque ?
                     RenderQueueRange.opaque : RenderQueueRange.transparent,
-                renderingLayerMask = (uint)renderingLayerMask
+                renderingLayerMask = renderingLayerMask
             }));
 		
         
