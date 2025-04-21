@@ -64,6 +64,7 @@ public class SetupPass
         pass.camera = camera;
         pass.clearFlags = camera.clearFlags;
         
+        
         TextureHandle colorCopy = default;
         TextureHandle depthCopy = default;
         
@@ -106,7 +107,7 @@ public class SetupPass
         }
         
         builder.AllowPassCulling(false);
-        builder.SetRenderFunc<SetupPass>((pass, context) => pass.Render(context));
+        builder.SetRenderFunc<SetupPass>(static (pass, context) => pass.Render(context));
         
         return new CameraRendererTextures(
             pass.colorAttachment, pass.depthAttachment, colorCopy, depthCopy);

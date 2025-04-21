@@ -30,7 +30,7 @@ public class GeometryPass
         uint renderingLayerMask, 
         bool opaque, 
         in CameraRendererTextures textures, 
-        in ShadowTextures shadowTextures)
+        in LightResources lightData)
     {
         ProfilingSampler sampler = opaque ? samplerOpaque : samplerTransparent;
         
@@ -39,7 +39,7 @@ public class GeometryPass
             out GeometryPass pass, 
             sampler);
 		
-        pass.list = builder.UseRendererList(renderGraph.CreateRendererList(
+        var rednderlist = renderGraph.CreateRendererList(
             new RendererListDesc(shaderTagIds, cullingResults, camera)
             {
                 sortingCriteria = opaque ? 
@@ -52,16 +52,14 @@ public class GeometryPass
                     PerObjectData.LightProbe |
                     PerObjectData.OcclusionProbe |
                     PerObjectData.LightProbeProxyVolume |
-                    PerObjectData.OcclusionProbeProxyVolume, //|
-                    /*(useLightsPerObject ?
-                        PerObjectData.LightData | PerObjectData.LightIndices :
-                        PerObjectData.None),*/
+                    PerObjectData.OcclusionProbeProxyVolume,
                 
                 renderQueueRange = opaque ?
                     RenderQueueRange.opaque : RenderQueueRange.transparent,
-                renderingLayerMask = renderingLayerMask
-            }));
-		
+                renderingLayerMask = (uint)renderingLayerMask
+            });
+
+        pass.list = builder.UseRendererList(rednderlist);
         
         builder.ReadWriteTexture(textures.colorAttachment);
         builder.ReadWriteTexture(textures.depthAttachment);
@@ -78,8 +76,16 @@ public class GeometryPass
             }
         }
         
-        builder.ReadTexture(shadowTextures.directionalAtlas);
-        builder.ReadTexture(shadowTextures.otherAtlas);
-        builder.SetRenderFunc<GeometryPass>((pass, context) => pass.Render(context));
+        
+        builder.ReadBuffer(lightData.directionalLightDataBuffer);
+        builder.ReadBuffer(lightData.otherLightDataBuffer);
+        builder.ReadTexture(lightData.shadowResources.directionalAtlas);
+        
+        builder.ReadTexture(lightData.shadowResources.otherAtlas);
+        builder.ReadBuffer(lightData.shadowResources.directionalShadowCascadesBuffer);
+        builder.ReadBuffer(lightData.shadowResources.directionalShadowMatricesBuffer);
+        builder.ReadBuffer(lightData.shadowResources.otherShadowDataBuffer);
+        
+        builder.SetRenderFunc<GeometryPass>(static (pass, context) => pass.Render(context));
     }
 }

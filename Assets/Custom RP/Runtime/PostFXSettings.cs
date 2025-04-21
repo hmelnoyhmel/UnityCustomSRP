@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Rendering/Custom Post FX Settings")]
@@ -157,5 +158,17 @@ public class PostFXSettings : ScriptableObject
         }
 
         public Mode mode;
+    }
+    
+    public static bool AreApplicableTo(Camera camera)
+    {
+#if UNITY_EDITOR
+        if (camera.cameraType == CameraType.SceneView &&
+            !SceneView.currentDrawingSceneView.sceneViewState.showImageEffects)
+        {
+            return false;
+        }
+#endif
+        return camera.cameraType <= CameraType.SceneView;
     }
 }

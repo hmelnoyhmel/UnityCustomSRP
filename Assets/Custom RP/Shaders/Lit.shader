@@ -54,7 +54,7 @@
 			ZWrite [_ZWrite]
 
 			HLSLPROGRAM
-			#pragma target 3.5
+			#pragma target 4.5
 			#pragma shader_feature _CLIPPING
 			#pragma shader_feature _RECEIVE_SHADOWS
 			#pragma shader_feature _PREMULTIPLY_ALPHA
@@ -83,7 +83,7 @@
 			ColorMask 0
 			
 			HLSLPROGRAM
-			#pragma target 3.5
+			#pragma target 4.5
 			#pragma shader_feature _ _SHADOWS_CLIP _SHADOWS_DITHER
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 			#pragma multi_compile_instancing
@@ -101,7 +101,7 @@
 			Cull Off
 
 			HLSLPROGRAM
-			#pragma target 3.5
+			#pragma target 4.5
 			#pragma vertex MetaPassVertex
 			#pragma fragment MetaPassFragment
 			#include "MetaPass.hlsl"
