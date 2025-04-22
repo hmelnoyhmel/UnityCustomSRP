@@ -12,6 +12,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf371d1de2e8ae54883ee7cf29bd627a, type: 3}
   m_Name: Custom RP
   m_EditorClassIdentifier: 
+  settings:
+    cameraBuffer:
+      allowHDR: 1
+      copyColor: 0
+      copyColorReflection: 0
+      copyDepth: 0
+      copyDepthReflection: 0
+      renderScale: 1
+      bicubicRescaling: 0
+      fxaa:
+        enabled: 0
+        fixedThreshold: 0.0833
+        relativeThreshold: 0.166
+        subpixelBlending: 0.75
+        quality: 0
+    useSRPBatcher: 1
+    useLightsPerObject: 1
+    shadows:
+      maxDistance: 100
+      distanceFade: 0.1
+      directional:
+        atlasSize: 1024
+        filter: 0
+        cascadeCount: 4
+        cascadeRatio1: 0.1
+        cascadeRatio2: 0.25
+        cascadeRatio3: 0.5
+        cascadeFade: 0.1
+        cascadeBlend: 0
+      other:
+        atlasSize: 1024
+        filter: 0
+    postFXSettings: {fileID: 0}
+    colorLUTResolution: 32
+    cameraRendererShader: {fileID: 0}
   cameraBuffer:
     allowHDR: 1
     copyColor: 1
@@ -26,6 +61,8 @@ MonoBehaviour:
       relativeThreshold: 0.166
       subpixelBlending: 0.75
       quality: 0
+  useDynamicBatching: 0
+  useGPUInstancing: 0
   useSRPBatcher: 1
   useLightsPerObject: 0
   shadows:
@@ -46,5 +83,3 @@ MonoBehaviour:
   postFXSettings: {fileID: 0}
   colorLUTResolution: 32
   cameraRendererShader: {fileID: 4800000, guid: 118e9b4179d441c5bdefa62ec645bd6e, type: 3}
-  useDynamicBatching: 0
-  useGPUInstancing: 0

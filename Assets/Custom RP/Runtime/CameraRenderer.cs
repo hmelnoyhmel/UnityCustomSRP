@@ -18,11 +18,16 @@ public class CameraRenderer
     public void Dispose() => CoreUtils.Destroy(material);
 
     public void Render(
-        RenderGraph renderGraph, ScriptableRenderContext context, Camera camera,
-        CameraBufferSettings bufferSettings,
-        bool useLightsPerObject, ShadowSettings shadowSettings, PostFXSettings postFXSettings,
-        int colorLUTResolution)
+        RenderGraph renderGraph, 
+        ScriptableRenderContext context, 
+        Camera camera,
+        CustomRenderPipelineSettings settings)
     {
+        CameraBufferSettings bufferSettings = settings.cameraBuffer;
+        PostFXSettings postFXSettings = settings.postFXSettings;
+        ShadowSettings shadowSettings = settings.shadows;
+        bool useLightsPerObject = settings.useLightsPerObject;
+        
         ProfilingSampler cameraSampler;
         CameraSettings cameraSettings;
         if (camera.TryGetComponent(out CustomRenderPipelineCamera crpCamera))
@@ -163,7 +168,7 @@ public class CameraRenderer
                 PostFXPass.Record(
                     renderGraph, 
                     postFXStack, 
-                    colorLUTResolution,
+                    (int)settings.colorLUTResolution,
                     cameraSettings.keepAlpha, 
                     textures);
             }

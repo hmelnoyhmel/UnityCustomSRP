@@ -223,6 +223,11 @@ public partial class Shadows
         if (shadowedOtherLightCount > 0)
             RenderOtherShadows();
         
+        buffer.SetGlobalBuffer(
+            directionalShadowCascadesId, directionalShadowCascadesBuffer);
+        buffer.SetGlobalBuffer(
+            directionalShadowMatricesId, directionalShadowMatricesBuffer);
+        buffer.SetGlobalBuffer(otherShadowDataId, otherShadowDataBuffer);
         buffer.SetGlobalTexture(directionalShadowAtlasId, directionalAtlas);
         buffer.SetGlobalTexture(otherShadowAtlasId, otherAtlas);
         
@@ -257,15 +262,18 @@ public partial class Shadows
         for (var i = 0; i < shadowedDirectionalLightCount; i++) RenderDirectionalShadows(i, split, tileSize);
 
         buffer.SetBufferData(
-            directionalShadowCascadesBuffer, directionalShadowCascades,
-            0, 0, settings.directional.cascadeCount);
-        buffer.SetGlobalBuffer(
-            directionalShadowCascadesId, directionalShadowCascadesBuffer);
+            directionalShadowCascadesBuffer, 
+            directionalShadowCascades,
+            0, 
+            0, 
+            settings.directional.cascadeCount);
+        
         buffer.SetBufferData(
-            directionalShadowMatricesBuffer, directionalShadowMatrices,
-            0, 0, shadowedDirectionalLightCount * settings.directional.cascadeCount);
-        buffer.SetGlobalBuffer(
-            directionalShadowMatricesId, directionalShadowMatricesBuffer);
+            directionalShadowMatricesBuffer, 
+            directionalShadowMatrices,
+            0, 
+            0, 
+            shadowedDirectionalLightCount * settings.directional.cascadeCount);
         
         SetKeywords(
             directionalFilterKeywords, (int)settings.directional.filter - 1);
@@ -353,7 +361,6 @@ public partial class Shadows
             0, 
             0, 
             shadowedOtherLightCount);
-        buffer.SetGlobalBuffer(otherShadowDataId, otherShadowDataBuffer);
         
         SetKeywords(otherFilterKeywords, (int)settings.other.filter - 1);
         buffer.EndSample("Other Shadows");

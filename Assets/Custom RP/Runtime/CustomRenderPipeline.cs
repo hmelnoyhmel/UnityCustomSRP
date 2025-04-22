@@ -7,32 +7,17 @@ public partial class CustomRenderPipeline : RenderPipeline
 {
     private readonly RenderGraph renderGraph = new("Custom SRP Render Graph");
     
-    private readonly CameraBufferSettings cameraBufferSettings;
-
-    private readonly int colorLUTResolution;
-
-    private readonly PostFXSettings postFXSettings;
     private readonly CameraRenderer renderer;
 
-    private readonly ShadowSettings shadowSettings;
-
-    private readonly bool useLightsPerObject;
-
-    public CustomRenderPipeline(
-        CameraBufferSettings cameraBufferSettings,
-        bool useSRPBatcher, bool useLightsPerObject, ShadowSettings shadowSettings,
-        PostFXSettings postFXSettings, int colorLUTResolution,
-        Shader cameraRendererShader)
+    private readonly CustomRenderPipelineSettings settings;
+    
+    public CustomRenderPipeline(CustomRenderPipelineSettings settings)
     {
-        this.colorLUTResolution = colorLUTResolution;
-        this.cameraBufferSettings = cameraBufferSettings;
-        this.postFXSettings = postFXSettings;
-        this.shadowSettings = shadowSettings;
-        this.useLightsPerObject = useLightsPerObject;
-        GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
+        this.settings = settings;
+        GraphicsSettings.useScriptableRenderPipelineBatching = settings.useSRPBatcher;
         GraphicsSettings.lightsUseLinearIntensity = true;
         InitializeForEditor();
-        renderer = new CameraRenderer(cameraRendererShader);
+        renderer = new CameraRenderer(settings.cameraRendererShader);
     }
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
@@ -42,11 +27,7 @@ public partial class CustomRenderPipeline : RenderPipeline
     protected override void Render(ScriptableRenderContext context, List<Camera> cameras)
     {
         foreach (var camera in cameras)
-            renderer.Render(
-                renderGraph, context, camera, cameraBufferSettings,
-                useLightsPerObject, shadowSettings, postFXSettings, 
-                colorLUTResolution
-            );
+            renderer.Render(renderGraph, context, camera, settings);
         renderGraph.EndFrame();
     }
 
