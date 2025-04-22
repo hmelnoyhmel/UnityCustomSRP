@@ -18,7 +18,7 @@ bool RenderingLayersOverlap(Surface surface, Light light)
     return (surface.renderingLayerMask & light.renderingLayerMask) != 0;
 }
 
-float3 GetLighting(Surface surfaceWS, BRDF brdf, GI gi)
+float3 GetLighting(Fragment fragment, Surface surfaceWS, BRDF brdf, GI gi)
 {
     ShadowData shadowData = GetShadowData(surfaceWS);
     shadowData.shadowMask = gi.shadowMask;
@@ -42,9 +42,11 @@ float3 GetLighting(Surface surfaceWS, BRDF brdf, GI gi)
 			}
 		}
     #else
-    for (int j = 0; j < GetOtherLightCount(); j++)
+    ForwardPlusTile tile = GetForwardPlusTile(fragment.screenUV);
+    int lastLightIndex = tile.GetLastLightIndexInTile();
+    for (int j = tile.GetFirstLightIndexInTile(); j <= lastLightIndex; j++)
     {
-        Light light = GetOtherLight(j, surfaceWS, shadowData);
+        Light light = GetOtherLight(tile.GetLightIndex(j), surfaceWS, shadowData);
         if (RenderingLayersOverlap(surfaceWS, light))
         {
             color += GetLighting(surfaceWS, brdf, light);

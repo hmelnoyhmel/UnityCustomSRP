@@ -17,7 +17,7 @@ public partial class CustomRenderPipeline : RenderPipeline
         GraphicsSettings.useScriptableRenderPipelineBatching = settings.useSRPBatcher;
         GraphicsSettings.lightsUseLinearIntensity = true;
         InitializeForEditor();
-        renderer = new CameraRenderer(settings.cameraRendererShader);
+        renderer = new CameraRenderer(settings.cameraRendererShader, settings.cameraDebuggerShader);
     }
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)

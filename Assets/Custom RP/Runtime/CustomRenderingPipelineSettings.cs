@@ -32,4 +32,5 @@ public class CustomRenderPipelineSettings
     public ColorLUTResolution colorLUTResolution = ColorLUTResolution._32;
 
     public Shader cameraRendererShader;
+    public Shader cameraDebuggerShader;
 }

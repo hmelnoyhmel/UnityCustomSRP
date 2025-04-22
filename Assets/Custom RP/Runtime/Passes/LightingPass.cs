@@ -2,38 +2,60 @@ using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
+using Unity.Jobs;
+using Unity.Mathematics;
 
 public partial class LightingPass
 {
-    static readonly ProfilingSampler sampler = new("Lighting");
+    private static readonly ProfilingSampler sampler = new("Lighting");
+
+    private const int maxDirectionalLightCount = 4;
+    private const int maxOtherLightCount = 128;
+    private const int maxLightsPerTile = 31;
+    private const int tileDataSize = maxLightsPerTile + 1;
+    private const int tileScreenPixelSize = 64;
+
+    private Vector2 screenUVToTileCoordinates;
+    private Vector2Int tileCount;
+
+    private NativeArray<float4> lightBounds;
+    private NativeArray<int> tileData;
+    private JobHandle forwardPlusJobHandle;
     
-    private const int maxDirectionalLightCount = 4, maxOtherLightCount = 64;
+    private int TileCount => tileCount.x * tileCount.y;
 
     private static readonly GlobalKeyword lightsPerObjectKeyword =
         GlobalKeyword.Create("_LIGHTS_PER_OBJECT");
-    
-    private static readonly int
-        directionalLightCountId = Shader.PropertyToID("_DirectionalLightCount"),
-        directionalLightDataId = Shader.PropertyToID("_DirectionalLightData"),
-        otherLightCountId = Shader.PropertyToID("_OtherLightCount"),
-        otherLightDataId = Shader.PropertyToID("_OtherLightData");
 
-    static readonly DirectionalLightData[] directionalLightData = new DirectionalLightData[maxDirectionalLightCount];
-    static readonly OtherLightData[] otherLightData = new OtherLightData[maxOtherLightCount];
-    
-    BufferHandle directionalLightDataBuffer;
-    BufferHandle otherLightDataBuffer;
+    private static readonly int directionalLightCountId = Shader.PropertyToID("_DirectionalLightCount");
+    private static readonly int directionalLightDataId = Shader.PropertyToID("_DirectionalLightData");
+    private static readonly int otherLightCountId = Shader.PropertyToID("_OtherLightCount");
+    private static readonly int otherLightDataId = Shader.PropertyToID("_OtherLightData");
+    private static readonly int tilesId = Shader.PropertyToID("_ForwardPlusTiles");
+    private static readonly int tileSettingsId = Shader.PropertyToID("_ForwardPlusTileSettings");
+
+    private static readonly DirectionalLightData[] directionalLightData =
+        new DirectionalLightData[maxDirectionalLightCount];
+
+    private static readonly OtherLightData[] otherLightData = 
+        new OtherLightData[maxOtherLightCount];
+
+    private BufferHandle directionalLightDataBuffer;
+    private BufferHandle otherLightDataBuffer;
+    private BufferHandle tilesBuffer;
     
     private readonly Shadows shadows = new();
 
     private CullingResults cullingResults;
-    
-    int directionalLightCount, otherLightCount;
 
-    bool useLightsPerObject;
+    private int directionalLightCount;
+    private int otherLightCount;
+
+    private bool useLightsPerObject;
     
     public void Setup(
         CullingResults cullingResults,
+        Vector2Int attachmentSize,
         ShadowSettings shadowSettings, 
         bool useLightsPerObject, 
         int renderingLayerMask)
@@ -41,7 +63,30 @@ public partial class LightingPass
         this.cullingResults = cullingResults;
         this.useLightsPerObject = useLightsPerObject;
         shadows.Setup(cullingResults, shadowSettings);
+        
+        if (!useLightsPerObject)
+        {
+            lightBounds = new NativeArray<float4>(
+                maxOtherLightCount, 
+                Allocator.TempJob,
+                NativeArrayOptions.UninitializedMemory);
+            
+            screenUVToTileCoordinates.x = attachmentSize.x / (float)tileScreenPixelSize;
+            screenUVToTileCoordinates.y = attachmentSize.y / (float)tileScreenPixelSize;
+            tileCount.x = Mathf.CeilToInt(screenUVToTileCoordinates.x);
+            tileCount.y = Mathf.CeilToInt(screenUVToTileCoordinates.y);
+        }
+        
         SetupLights(renderingLayerMask);
+    }
+    
+    void SetupForwardPlus(int lightIndex, ref VisibleLight visibleLight)
+    {
+        if (!useLightsPerObject)
+        {
+            Rect r = visibleLight.screenRect;
+            lightBounds[lightIndex] = math.float4(r.xMin, r.yMin, r.xMax, r.yMax);
+        }
     }
 
     private void SetupLights(int renderingLayerMask)
@@ -75,6 +120,7 @@ public partial class LightingPass
                         if (otherLightCount < maxOtherLightCount)
                         {
                             newIndex = otherLightCount;
+                            SetupForwardPlus(otherLightCount, ref visibleLight);
                             otherLightData[otherLightCount++] =
                                 OtherLightData.CreatePointLight(
                                     ref visibleLight, light,
@@ -86,6 +132,7 @@ public partial class LightingPass
                         if (otherLightCount < maxOtherLightCount)
                         {
                             newIndex = otherLightCount;
+                            SetupForwardPlus(otherLightCount, ref visibleLight);
                             otherLightData[otherLightCount++] =
                                 OtherLightData.CreateSpotLight(
                                     ref visibleLight, light,
@@ -104,6 +151,22 @@ public partial class LightingPass
             for (; i < indexMap.Length; i++) indexMap[i] = -1;
             cullingResults.SetLightIndexMap(indexMap);
             indexMap.Dispose();
+        }
+        else
+        {
+            tileData = new NativeArray<int>(TileCount * tileDataSize, Allocator.TempJob);
+            forwardPlusJobHandle = new ForwardPlusTilesJob
+            {
+                lightBounds = lightBounds,
+                tileData = tileData,
+                otherLightCount = otherLightCount,
+                tileScreenUVSize = math.float2(
+                    1f / screenUVToTileCoordinates.x,
+                    1f / screenUVToTileCoordinates.y),
+                maxLightsPerTile = maxLightsPerTile,
+                tilesPerRow = tileCount.x,
+                tileDataSize = tileDataSize
+            }.ScheduleParallel(TileCount, tileCount.x, default);
         }
     }
 
@@ -131,13 +194,40 @@ public partial class LightingPass
         buffer.SetGlobalBuffer(otherLightDataId, otherLightDataBuffer);
         
         shadows.Render(context);
+        
+        if (useLightsPerObject)
+        {
+            context.renderContext.ExecuteCommandBuffer(buffer);
+            buffer.Clear();
+            return;
+        }
+        
+        forwardPlusJobHandle.Complete();
+        buffer.SetBufferData(
+            tilesBuffer, 
+            tileData, 
+            0, 
+            0, 
+            tileData.Length);
+        
+        buffer.SetGlobalBuffer(tilesId, tilesBuffer);
+        buffer.SetGlobalVector(tileSettingsId, 
+            new Vector4(
+            screenUVToTileCoordinates.x,
+            screenUVToTileCoordinates.y,
+            tileCount.x.ReinterpretAsFloat(),
+            tileDataSize.ReinterpretAsFloat()));
+        
         context.renderContext.ExecuteCommandBuffer(buffer);
         buffer.Clear();
+        lightBounds.Dispose();
+        tileData.Dispose();
     }
 
     public static LightResources Record(
         RenderGraph renderGraph, 
         CullingResults cullingResults, 
+        Vector2Int attachmentSize,
         ShadowSettings shadowSettings,
         bool useLightsPerObject, 
         int renderingLayerMask)
@@ -147,7 +237,8 @@ public partial class LightingPass
                 sampler.name,
                 out LightingPass pass,
                 sampler);
-        pass.Setup(cullingResults, shadowSettings,
+        
+        pass.Setup(cullingResults, attachmentSize, shadowSettings,
             useLightsPerObject, renderingLayerMask);
         
         pass.directionalLightDataBuffer = builder.WriteBuffer(
@@ -164,12 +255,23 @@ public partial class LightingPass
                 name = "Other Light Data"
             }));
         
+        if (!useLightsPerObject)
+        {
+            pass.tilesBuffer = builder.WriteBuffer(
+                renderGraph.CreateBuffer(
+                    new BufferDesc(pass.TileCount * tileDataSize, 4)
+                {
+                    name = "Forward+ Tiles"
+                }));
+        }
+        
         builder.SetRenderFunc<LightingPass>(static (pass, context) => pass.Render(context));
         builder.AllowPassCulling(false);
         
         return new LightResources(
             pass.directionalLightDataBuffer,
             pass.otherLightDataBuffer,
+            pass.tilesBuffer,
             pass.shadows.GetResources(renderGraph, builder));
     }
 }

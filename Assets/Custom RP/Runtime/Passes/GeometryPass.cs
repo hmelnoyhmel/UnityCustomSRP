@@ -79,6 +79,10 @@ public class GeometryPass
         
         builder.ReadBuffer(lightData.directionalLightDataBuffer);
         builder.ReadBuffer(lightData.otherLightDataBuffer);
+        if (lightData.tilesBuffer.IsValid())
+        {
+            builder.ReadBuffer(lightData.tilesBuffer);
+        }
         builder.ReadTexture(lightData.shadowResources.directionalAtlas);
         
         builder.ReadTexture(lightData.shadowResources.otherAtlas);

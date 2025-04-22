@@ -12,10 +12,18 @@ public class CameraRenderer
     private readonly Material material;
 
     private readonly PostFXStack postFXStack = new();
-    
-    public CameraRenderer(Shader shader) => material = CoreUtils.CreateEngineMaterial(shader);
 
-    public void Dispose() => CoreUtils.Destroy(material);
+    public CameraRenderer(Shader shader, Shader cameraDebuggerShader)
+    {
+        material = CoreUtils.CreateEngineMaterial(shader);
+        CameraDebugger.Initialize(cameraDebuggerShader);
+    }
+
+    public void Dispose()
+    {
+        CoreUtils.Destroy(material);
+        CameraDebugger.Cleanup();
+    }
 
     public void Render(
         RenderGraph renderGraph, 
@@ -110,8 +118,12 @@ public class CameraRenderer
         
         
         
-        var useIntermediateBuffer = useScaledRendering ||
-                                useColorTexture || useDepthTexture || hasActivePostFX;
+        var useIntermediateBuffer = 
+            useScaledRendering || 
+            useColorTexture || 
+            useDepthTexture || 
+            hasActivePostFX || 
+            !useLightsPerObject;
         
         var renderGraphParameters = new RenderGraphParameters
         {
@@ -128,7 +140,7 @@ public class CameraRenderer
             // Add passes here.
             
             var lightResources = LightingPass.Record(
-                renderGraph, cullingResults, shadowSettings, useLightsPerObject,
+                renderGraph, cullingResults, bufferSize, shadowSettings, useLightsPerObject,
                 cameraSettings.maskLights ? cameraSettings.newRenderingLayerMask : -1);
 
             CameraRendererTextures textures = 
@@ -177,6 +189,7 @@ public class CameraRenderer
                 FinalPass.Record(renderGraph, copier, textures);
             }
             
+            DebugPass.Record(renderGraph, settings, camera, lightResources);
             GizmosPass.Record(renderGraph, useIntermediateBuffer, copier, textures);
         }
         renderGraph.EndRecordingAndExecute();
