@@ -25,8 +25,7 @@ public class GeometryPass
     public static void Record(
         RenderGraph renderGraph, 
         Camera camera, 
-        CullingResults cullingResults, 
-        bool useLightsPerObject, 
+        CullingResults cullingResults,
         uint renderingLayerMask, 
         bool opaque, 
         in CameraRendererTextures textures, 

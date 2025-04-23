@@ -32,16 +32,7 @@ float3 GetLighting(Fragment fragment, Surface surfaceWS, BRDF brdf, GI gi)
             color += GetLighting(surfaceWS, brdf, light);
         }
     }
-
-    #if defined(_LIGHTS_PER_OBJECT)
-		for (int j = 0; j < min(unity_LightData.y, 8); j++) {
-			int lightIndex = unity_LightIndices[(uint)j / 4][(uint)j % 4];
-			Light light = GetOtherLight(lightIndex, surfaceWS, shadowData);
-			if (RenderingLayersOverlap(surfaceWS, light)) {
-				color += GetLighting(surfaceWS, brdf, light);
-			}
-		}
-    #else
+    
     ForwardPlusTile tile = GetForwardPlusTile(fragment.screenUV);
     int lastLightIndex = tile.GetLastLightIndexInTile();
     for (int j = tile.GetFirstLightIndexInTile(); j <= lastLightIndex; j++)
@@ -52,7 +43,6 @@ float3 GetLighting(Fragment fragment, Surface surfaceWS, BRDF brdf, GI gi)
             color += GetLighting(surfaceWS, brdf, light);
         }
     }
-    #endif
     return color;
 }
 

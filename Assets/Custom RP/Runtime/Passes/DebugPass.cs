@@ -14,9 +14,7 @@ public class DebugPass
         Camera camera,
         in LightResources lightData)
     {
-        if (CameraDebugger.IsActive &&
-            camera.cameraType <= CameraType.SceneView &&
-            !settings.useLightsPerObject)
+        if (CameraDebugger.IsActive && camera.cameraType <= CameraType.SceneView)
         {
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, 

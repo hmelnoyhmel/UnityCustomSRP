@@ -16,7 +16,8 @@ public class CustomRenderPipelineSettings
     };
 
     public bool useSRPBatcher = true;
-    public bool useLightsPerObject = true;
+    
+    public ForwardPlusSettings forwardPlus;
 
     public ShadowSettings shadows;
 

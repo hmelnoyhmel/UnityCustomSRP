@@ -12,6 +12,15 @@ public class ShadowSettings
         PCF7x7
     }
 
+    public enum FilterQuality
+    {
+        Low, 
+        Medium, 
+        High
+    }
+
+    public FilterQuality filterQuality = FilterQuality.Medium;
+    
     public enum MapSize
     {
         _256 = 256,
@@ -29,7 +38,6 @@ public class ShadowSettings
     public Directional directional = new()
     {
         atlasSize = MapSize._1024,
-        filter = FilterMode.PCF2x2,
         cascadeCount = 4,
         cascadeRatio1 = 0.1f,
         cascadeRatio2 = 0.25f,
@@ -37,12 +45,15 @@ public class ShadowSettings
         cascadeFade = 0.1f,
         cascadeBlend = Directional.CascadeBlendMode.Hard
     };
+    
+    public float DirectionalFilterSize => (float)filterQuality + 2f;
 
     public Other other = new()
     {
-        atlasSize = MapSize._1024,
-        filter = FilterMode.PCF2x2
+        atlasSize = MapSize._1024
     };
+    
+    public float OtherFilterSize => (float)filterQuality + 2f;
 
     [Serializable]
     public struct Directional
@@ -54,20 +65,24 @@ public class ShadowSettings
             Dither
         }
 
+        public bool softCascadeBlend;
+        
         public MapSize atlasSize;
-
-        public FilterMode filter;
 
         [Range(1, 4)] public int cascadeCount;
 
         [Range(0f, 1f)] public float cascadeRatio1, cascadeRatio2, cascadeRatio3;
 
         [Range(0.001f, 1f)] public float cascadeFade;
-
-        public CascadeBlendMode cascadeBlend;
-
+        
         public readonly Vector3 CascadeRatios =>
             new(cascadeRatio1, cascadeRatio2, cascadeRatio3);
+
+        [Header("Deprecated Settings"), Tooltip("Use new boolean toggle.")]
+        public CascadeBlendMode cascadeBlend;
+        
+        [Tooltip("Use new Filter Quality.")]
+        public FilterMode filter;
     }
 
     [Serializable]
@@ -75,6 +90,7 @@ public class ShadowSettings
     {
         public MapSize atlasSize;
 
+        [Header("Deprecated Settings"), Tooltip("Use new Filter Quality.")]
         public FilterMode filter;
     }
 }

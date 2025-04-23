@@ -6,13 +6,13 @@ public class SkyboxPass
 {
     static readonly ProfilingSampler sampler = new("Skybox");
 
-    Camera camera;
+    RendererListHandle list;
 
     void Render(RenderGraphContext context)
     {
+        context.cmd.DrawRendererList(list);
         context.renderContext.ExecuteCommandBuffer(context.cmd);
         context.cmd.Clear();
-        context.renderContext.DrawSkybox(camera);
     }
 
     public static void Record(
@@ -27,7 +27,8 @@ public class SkyboxPass
                 out SkyboxPass pass, 
                 sampler);
             
-            pass.camera = camera;
+            pass.list = builder.UseRendererList(renderGraph.CreateSkyboxRendererList(camera));
+            builder.AllowPassCulling(false);
             builder.ReadWriteTexture(textures.colorAttachment);
             builder.ReadTexture(textures.depthAttachment);
             builder.SetRenderFunc<SkyboxPass>(static (pass, context) => pass.Render(context));

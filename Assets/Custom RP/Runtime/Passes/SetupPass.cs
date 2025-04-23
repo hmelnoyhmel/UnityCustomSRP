@@ -23,14 +23,12 @@ public class SetupPass
     {
         context.renderContext.SetupCameraProperties(camera);
         CommandBuffer cmd = context.cmd;
-        if (useIntermediateAttachments)
-        {
-            cmd.SetRenderTarget(
-                colorAttachment,
-                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                depthAttachment,
-                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
-        }
+        cmd.SetRenderTarget(
+            colorAttachment,
+            RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+            depthAttachment, 
+            RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+        
         cmd.ClearRenderTarget(
             clearFlags <= CameraClearFlags.Depth,
             clearFlags <= CameraClearFlags.Color,
@@ -46,8 +44,7 @@ public class SetupPass
     }
 
     public static CameraRendererTextures Record(
-        RenderGraph renderGraph, 
-        bool useIntermediateAttachments,
+        RenderGraph renderGraph,
         bool copyColor,
         bool copyDepth,
         bool useHDR,
@@ -59,17 +56,14 @@ public class SetupPass
             out SetupPass pass,
             sampler);
         
-        pass.useIntermediateAttachments = useIntermediateAttachments;
         pass.attachmentSize = attachmentSize;
         pass.camera = camera;
         pass.clearFlags = camera.clearFlags;
         
-        
         TextureHandle colorCopy = default;
         TextureHandle depthCopy = default;
         
-        if (useIntermediateAttachments)
-        {
+        
             if (pass.clearFlags > CameraClearFlags.Color)
             {
                 pass.clearFlags = CameraClearFlags.Color;
@@ -97,14 +91,6 @@ public class SetupPass
                 desc.name = "Depth Copy";
                 depthCopy = renderGraph.CreateTexture(desc);
             }
-        }
-        else
-        {
-            pass.colorAttachment =
-                builder.WriteTexture(renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget));
-            pass.depthAttachment = 
-                builder.WriteTexture(renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget));
-        }
         
         builder.AllowPassCulling(false);
         builder.SetRenderFunc<SetupPass>(static (pass, context) => pass.Render(context));

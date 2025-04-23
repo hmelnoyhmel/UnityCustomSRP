@@ -8,8 +8,6 @@ public class GizmosPass
 #if UNITY_EDITOR
     
     static readonly ProfilingSampler sampler = new("Gizmos");
-    
-    bool requiresDepthCopy;
 
     CameraRendererCopier copier;
 
@@ -20,13 +18,11 @@ public class GizmosPass
         CommandBuffer buffer = context.cmd;
         ScriptableRenderContext renderContext = context.renderContext;
         
-        if (requiresDepthCopy)
-        {
             copier.CopyByDrawing(
                 buffer, depthAttachment, BuiltinRenderTextureType.CameraTarget, true);
             renderContext.ExecuteCommandBuffer(buffer);
             buffer.Clear();
-        }
+        
         renderContext.DrawGizmos(copier.Camera, GizmoSubset.PreImageEffects);
         renderContext.DrawGizmos(copier.Camera, GizmoSubset.PostImageEffects);
     }
@@ -35,8 +31,7 @@ public class GizmosPass
   
     [Conditional("UNITY_EDITOR")]
     public static void Record(
-        RenderGraph renderGraph, 
-        bool useIntermediateBuffer,
+        RenderGraph renderGraph,
         CameraRendererCopier copier,
         in CameraRendererTextures textures)
     {
@@ -48,13 +43,10 @@ public class GizmosPass
                 out GizmosPass pass,
                 sampler);
             
-            pass.requiresDepthCopy = useIntermediateBuffer;
-            pass.copier = copier;
-            if (useIntermediateBuffer)
-            {
-                pass.depthAttachment = builder.ReadTexture(textures.depthAttachment);
-            }
             
+            pass.copier = copier;
+            pass.depthAttachment = builder.ReadTexture(textures.depthAttachment);
+                
             builder.SetRenderFunc<GizmosPass>(static (pass, context) => pass.Render(context));
         }
 #endif

@@ -1,6 +1,8 @@
-﻿Shader "Custom RP/Lit" {
+﻿Shader "Custom RP/Lit" 
+{
 	
-	Properties {
+	Properties 
+	{
 		_BaseMap("Texture", 2D) = "white" {}
 		_BaseColor("Color", Color) = (0.5, 0.5, 0.5, 1.0)
 		_Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
@@ -46,7 +48,8 @@
 		ENDHLSL
 
 		Pass {
-			Tags {
+			Tags 
+			{
 				"LightMode" = "CustomLit"
 			}
 
@@ -61,11 +64,9 @@
 			#pragma shader_feature _MASK_MAP
 			#pragma shader_feature _NORMAL_MAP
 			#pragma shader_feature _DETAIL_MAP
-			#pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
-			#pragma multi_compile _ _OTHER_PCF3 _OTHER_PCF5 _OTHER_PCF7
-			#pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
+			#pragma multi_compile _ _SHADOW_FILTER_MEDIUM _SHADOW_FILTER_HIGH
+			#pragma multi_compile _ _SOFT_CASCADE_BLEND
 			#pragma multi_compile _ _SHADOW_MASK_ALWAYS _SHADOW_MASK_DISTANCE
-			#pragma multi_compile _ _LIGHTS_PER_OBJECT
 			#pragma multi_compile _ LIGHTMAP_ON
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 			#pragma multi_compile_instancing
@@ -76,7 +77,8 @@
 		}
 
 		Pass {
-			Tags {
+			Tags 
+			{
 				"LightMode" = "ShadowCaster"
 			}
 
@@ -94,7 +96,8 @@
 		}
 
 		Pass {
-			Tags {
+			Tags 
+			{
 				"LightMode" = "Meta"
 			}
 

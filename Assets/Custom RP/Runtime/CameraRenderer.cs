@@ -34,7 +34,6 @@ public class CameraRenderer
         CameraBufferSettings bufferSettings = settings.cameraBuffer;
         PostFXSettings postFXSettings = settings.postFXSettings;
         ShadowSettings shadowSettings = settings.shadows;
-        bool useLightsPerObject = settings.useLightsPerObject;
         
         ProfilingSampler cameraSampler;
         CameraSettings cameraSettings;
@@ -116,15 +115,6 @@ public class CameraRenderer
         
         bufferSettings.fxaa.enabled &= cameraSettings.allowFXAA;
         
-        
-        
-        var useIntermediateBuffer = 
-            useScaledRendering || 
-            useColorTexture || 
-            useDepthTexture || 
-            hasActivePostFX || 
-            !useLightsPerObject;
-        
         var renderGraphParameters = new RenderGraphParameters
         {
             commandBuffer = CommandBufferPool.Get(),
@@ -140,17 +130,19 @@ public class CameraRenderer
             // Add passes here.
             
             var lightResources = LightingPass.Record(
-                renderGraph, cullingResults, bufferSize, shadowSettings, useLightsPerObject,
-                cameraSettings.maskLights ? cameraSettings.newRenderingLayerMask : -1);
+                renderGraph, cullingResults, bufferSize, 
+                settings.forwardPlus, shadowSettings, 
+                cameraSettings.maskLights ? cameraSettings.newRenderingLayerMask : -1,
+                context);
 
             CameraRendererTextures textures = 
-                SetupPass.Record(renderGraph, useIntermediateBuffer, useColorTexture, 
+                SetupPass.Record(renderGraph, useColorTexture, 
                     useDepthTexture, bufferSettings.allowHDR, bufferSize, camera);
             
             // opaque pass
             GeometryPass.Record(
                 renderGraph, camera, cullingResults,
-                useLightsPerObject, cameraSettings.newRenderingLayerMask, 
+                cameraSettings.newRenderingLayerMask, 
                 true, textures, lightResources);
 
             SkyboxPass.Record(renderGraph, camera, textures);
@@ -164,7 +156,7 @@ public class CameraRenderer
             // transparent pass
             GeometryPass.Record(
                 renderGraph, camera, cullingResults,
-                useLightsPerObject, cameraSettings.newRenderingLayerMask, 
+                cameraSettings.newRenderingLayerMask, 
                 false, textures, lightResources);
             
             UnsupportedShadersPass.Record(renderGraph, camera, cullingResults);
@@ -184,13 +176,13 @@ public class CameraRenderer
                     cameraSettings.keepAlpha, 
                     textures);
             }
-            else if (useIntermediateBuffer)
+            else
             {
                 FinalPass.Record(renderGraph, copier, textures);
             }
             
             DebugPass.Record(renderGraph, settings, camera, lightResources);
-            GizmosPass.Record(renderGraph, useIntermediateBuffer, copier, textures);
+            GizmosPass.Record(renderGraph, copier, textures);
         }
         renderGraph.EndRecordingAndExecute();
 

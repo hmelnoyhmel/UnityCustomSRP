@@ -19,8 +19,10 @@ public class CustomLightEditor : LightEditor
 
         var light = target as Light;
         if (light.cullingMask != -1)
+        {
             EditorGUILayout.HelpBox(
-                "Culling Mask only affects shadows.",
+                "Culling Mask only affects shadows.", 
                 MessageType.Warning);
+        }
     }
 }
