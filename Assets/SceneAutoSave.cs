@@ -4,49 +4,47 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-namespace UnityPatches
+[InitializeOnLoad]
+internal static class SceneAutoSave
 {
-    [InitializeOnLoad]
-    internal static class SceneAutoSave
+    private static DateTime nextSaveTime;
+
+    // Static constructor that gets called when unity fires up.
+    static SceneAutoSave()
     {
-        private static DateTime nextSaveTime;
+        EditorApplication.playModeStateChanged -= OnEditorApplicationOnplayModeStateChanged;
+        EditorApplication.playModeStateChanged += OnEditorApplicationOnplayModeStateChanged;
 
-        // Static constructor that gets called when unity fires up.
-        static SceneAutoSave()
-        {
-            EditorApplication.playModeStateChanged -= OnEditorApplicationOnplayModeStateChanged;
-            EditorApplication.playModeStateChanged += OnEditorApplicationOnplayModeStateChanged;
+        // Also, every five minutes.
+        nextSaveTime = DateTime.Now.AddMinutes(5);
+        EditorApplication.update -= Update;
+        EditorApplication.update += Update;
+        Debug.Log("Added Auto Scene Save callback.");
+    }
 
-            // Also, every five minutes.
-            nextSaveTime = DateTime.Now.AddMinutes(5);
-            EditorApplication.update -= Update;
-            EditorApplication.update += Update;
-            Debug.Log("Added Auto Scene Save callback.");
-        }
+    private static void OnEditorApplicationOnplayModeStateChanged(PlayModeStateChange state)
+    {
+        // If we're about to run the scene...
+        if (!EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isPlaying) return;
 
-        private static void OnEditorApplicationOnplayModeStateChanged(PlayModeStateChange state)
-        {
-            // If we're about to run the scene...
-            if (!EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isPlaying) return;
+        // Save the scene and the assets.
+        Debug.Log("Auto-saving all open scenes... " + state);
+        EditorSceneManager.SaveOpenScenes();
+        AssetDatabase.SaveAssets();
+    }
 
-            // Save the scene and the assets.
-            Debug.Log("Auto-saving all open scenes... " + state);
-            EditorSceneManager.SaveOpenScenes();
-            AssetDatabase.SaveAssets();
-        }
+    private static void Update()
+    {
+        if (nextSaveTime > DateTime.Now) return;
 
-        private static void Update()
-        {
-            if (nextSaveTime > DateTime.Now) return;
+        nextSaveTime = nextSaveTime.AddMinutes(5);
 
-            nextSaveTime = nextSaveTime.AddMinutes(5);
+        if (EditorApplication.isPlaying) return;
 
-            if (EditorApplication.isPlaying) return;
-
-            Debug.Log("AutoSave Scenes: " + DateTime.Now.ToShortTimeString());
-            EditorSceneManager.SaveOpenScenes();
-            AssetDatabase.SaveAssets();
-        }
+        Debug.Log("AutoSave Scenes: " + DateTime.Now.ToShortTimeString());
+        EditorSceneManager.SaveOpenScenes();
+        AssetDatabase.SaveAssets();
     }
 }
+
 #endif

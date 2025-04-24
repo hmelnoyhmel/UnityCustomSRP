@@ -1,37 +1,40 @@
 using UnityEngine;
-using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 
-public class SkyboxPass
+namespace Custom_RP.Runtime.Passes
 {
-    static readonly ProfilingSampler sampler = new("Skybox");
-
-    RendererListHandle list;
-
-    void Render(RenderGraphContext context)
+    public class SkyboxPass
     {
-        context.cmd.DrawRendererList(list);
-        context.renderContext.ExecuteCommandBuffer(context.cmd);
-        context.cmd.Clear();
-    }
+        static readonly ProfilingSampler Sampler = new("Skybox");
 
-    public static void Record(
-        RenderGraph renderGraph, 
-        Camera camera,
-        in CameraRendererTextures textures)
-    {
-        if (camera.clearFlags == CameraClearFlags.Skybox)
+        RendererListHandle list;
+
+        void Render(RenderGraphContext context)
         {
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                sampler.name, 
-                out SkyboxPass pass, 
-                sampler);
+            context.cmd.DrawRendererList(list);
+            context.renderContext.ExecuteCommandBuffer(context.cmd);
+            context.cmd.Clear();
+        }
+
+        public static void Record(
+            RenderGraph renderGraph, 
+            Camera camera,
+            in CameraRendererTextures textures)
+        {
+            if (camera.clearFlags == CameraClearFlags.Skybox)
+            {
+                using RenderGraphBuilder builder = renderGraph.AddRenderPass(
+                    Sampler.name, 
+                    out SkyboxPass pass, 
+                    Sampler);
             
-            pass.list = builder.UseRendererList(renderGraph.CreateSkyboxRendererList(camera));
-            builder.AllowPassCulling(false);
-            builder.ReadWriteTexture(textures.colorAttachment);
-            builder.ReadTexture(textures.depthAttachment);
-            builder.SetRenderFunc<SkyboxPass>(static (pass, context) => pass.Render(context));
+                pass.list = builder.UseRendererList(renderGraph.CreateSkyboxRendererList(camera));
+                builder.AllowPassCulling(false);
+                builder.ReadWriteTexture(textures.ColorAttachment);
+                builder.ReadTexture(textures.DepthAttachment);
+                builder.SetRenderFunc<SkyboxPass>(static (pass, context) => pass.Render(context));
+            }
         }
     }
 }

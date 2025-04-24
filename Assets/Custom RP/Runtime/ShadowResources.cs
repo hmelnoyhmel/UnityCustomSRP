@@ -1,25 +1,28 @@
 using UnityEngine.Rendering.RenderGraphModule;
 
-public readonly ref struct ShadowResources
+namespace Custom_RP.Runtime
 {
-    public readonly TextureHandle directionalAtlas, otherAtlas;
-
-    public readonly BufferHandle
-        directionalShadowCascadesBuffer,
-        directionalShadowMatricesBuffer,
-        otherShadowDataBuffer;
-    
-    public ShadowResources(
-        TextureHandle directionalAtlas,
-        TextureHandle otherAtlas,
-        BufferHandle directionalShadowCascadesBuffer,
-        BufferHandle directionalShadowMatricesBuffer,
-        BufferHandle otherShadowDataBuffer)
+    public readonly ref struct ShadowResources
     {
-        this.directionalAtlas = directionalAtlas;
-        this.otherAtlas = otherAtlas;
-        this.directionalShadowCascadesBuffer = directionalShadowCascadesBuffer;
-        this.directionalShadowMatricesBuffer = directionalShadowMatricesBuffer;
-        this.otherShadowDataBuffer = otherShadowDataBuffer;
+        public readonly TextureHandle DirectionalAtlas, OtherAtlas;
+
+        public readonly BufferHandle
+            DirectionalShadowCascadesBuffer,
+            DirectionalShadowMatricesBuffer,
+            OtherShadowDataBuffer;
+    
+        public ShadowResources(
+            TextureHandle directionalAtlas,
+            TextureHandle otherAtlas,
+            BufferHandle directionalShadowCascadesBuffer,
+            BufferHandle directionalShadowMatricesBuffer,
+            BufferHandle otherShadowDataBuffer)
+        {
+            this.DirectionalAtlas = directionalAtlas;
+            this.OtherAtlas = otherAtlas;
+            this.DirectionalShadowCascadesBuffer = directionalShadowCascadesBuffer;
+            this.DirectionalShadowMatricesBuffer = directionalShadowMatricesBuffer;
+            this.OtherShadowDataBuffer = otherShadowDataBuffer;
+        }
     }
 }

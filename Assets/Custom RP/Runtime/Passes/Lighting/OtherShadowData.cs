@@ -1,12 +1,12 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-partial class Shadows
+namespace Custom_RP.Runtime.Passes.Lighting
 {
     [StructLayout(LayoutKind.Sequential)]
-    struct OtherShadowData
+    internal struct OtherShadowData
     {
-        public const int stride = 4 * 4 + 4 * 16;
+        public const int Stride = 4 * 4 + 4 * 16;
 
         public Vector4 tileData;
 

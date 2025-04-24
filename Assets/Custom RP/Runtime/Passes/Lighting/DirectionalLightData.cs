@@ -2,12 +2,12 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-partial class LightingPass
+namespace Custom_RP.Runtime.Passes.Lighting
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct DirectionalLightData
     {
-        public const int stride = 4 * 4 * 3;
+        public const int Stride = 4 * 4 * 3;
 
         public Vector4 color;
         public Vector4 directionAndMask;

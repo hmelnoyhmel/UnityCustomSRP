@@ -1,27 +1,30 @@
 using System.Diagnostics;
 using UnityEngine;
-using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 
-public class DebugPass
+namespace Custom_RP.Runtime.Passes
 {
-    static readonly ProfilingSampler sampler = new("Debug");
-
-    [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
-    public static void Record(
-        RenderGraph renderGraph,
-        CustomRenderPipelineSettings settings,
-        Camera camera,
-        in LightResources lightData)
+    public class DebugPass
     {
-        if (CameraDebugger.IsActive && camera.cameraType <= CameraType.SceneView)
+        static readonly ProfilingSampler Sampler = new("Debug");
+
+        [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
+        public static void Record(
+            RenderGraph renderGraph,
+            CustomRenderPipelineSettings settings,
+            Camera camera,
+            in LightResources lightData)
         {
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                sampler.name, 
-                out DebugPass pass, 
-                sampler);
-            builder.ReadBuffer(lightData.tilesBuffer);
-            builder.SetRenderFunc<DebugPass>(static (pass, context) => CameraDebugger.Render(context));
+            if (CameraDebugger.IsActive && camera.cameraType <= CameraType.SceneView)
+            {
+                using RenderGraphBuilder builder = renderGraph.AddRenderPass(
+                    Sampler.name, 
+                    out DebugPass pass, 
+                    Sampler);
+                builder.ReadBuffer(lightData.TilesBuffer);
+                builder.SetRenderFunc<DebugPass>(static (pass, context) => CameraDebugger.Render(context));
+            }
         }
     }
 }

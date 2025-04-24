@@ -1,12 +1,14 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
 
-[CreateAssetMenu(menuName = "Rendering/Custom Render Pipeline")]
-public class CustomRenderPipelineAsset : RenderPipelineAsset<CustomRenderPipeline>
+namespace Custom_RP.Runtime
 {
-    [SerializeField]
-    CustomRenderPipelineSettings settings;
+    [CreateAssetMenu(menuName = "Rendering/Custom Render Pipeline")]
+    public class CustomRenderPipelineAsset : RenderPipelineAsset<CustomRenderPipeline>
+    {
+        [SerializeField]
+        CustomRenderPipelineSettings settings;
     
-    protected override RenderPipeline CreatePipeline() => new CustomRenderPipeline(settings);
+        protected override RenderPipeline CreatePipeline() => new CustomRenderPipeline(settings);
+    }
 }

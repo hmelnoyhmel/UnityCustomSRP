@@ -1,12 +1,12 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-partial class Shadows
+namespace Custom_RP.Runtime.Passes.Lighting
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct DirectionalShadowCascade
     {
-        public const int stride = 4 * 4 * 2;
+        public const int Stride = 4 * 4 * 2;
 
         public Vector4 cullingSphere, data;
 

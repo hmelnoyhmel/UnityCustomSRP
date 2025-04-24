@@ -1,20 +1,23 @@
 using UnityEngine.Rendering.RenderGraphModule;
 
-public readonly ref struct CameraRendererTextures
+namespace Custom_RP.Runtime
 {
-    public readonly TextureHandle
-        colorAttachment, depthAttachment,
-        colorCopy, depthCopy;
-
-    public CameraRendererTextures(
-        TextureHandle colorAttachment,
-        TextureHandle depthAttachment,
-        TextureHandle colorCopy,
-        TextureHandle depthCopy)
+    public readonly ref struct CameraRendererTextures
     {
-        this.colorAttachment = colorAttachment;
-        this.depthAttachment = depthAttachment;
-        this.colorCopy = colorCopy;
-        this.depthCopy = depthCopy;
+        public readonly TextureHandle
+            ColorAttachment, DepthAttachment,
+            ColorCopy, DepthCopy;
+
+        public CameraRendererTextures(
+            TextureHandle colorAttachment,
+            TextureHandle depthAttachment,
+            TextureHandle colorCopy,
+            TextureHandle depthCopy)
+        {
+            this.ColorAttachment = colorAttachment;
+            this.DepthAttachment = depthAttachment;
+            this.ColorCopy = colorCopy;
+            this.DepthCopy = depthCopy;
+        }
     }
 }

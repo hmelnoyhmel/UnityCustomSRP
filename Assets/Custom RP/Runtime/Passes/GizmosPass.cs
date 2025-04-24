@@ -3,52 +3,55 @@ using UnityEditor;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 
-public class GizmosPass
+namespace Custom_RP.Runtime.Passes
 {
+    public class GizmosPass
+    {
 #if UNITY_EDITOR
     
-    static readonly ProfilingSampler sampler = new("Gizmos");
+        static readonly ProfilingSampler Sampler = new("Gizmos");
 
-    CameraRendererCopier copier;
+        CameraRendererCopier copier;
 
-    TextureHandle depthAttachment;
+        TextureHandle depthAttachment;
 
-    void Render(RenderGraphContext context)
-    {
-        CommandBuffer buffer = context.cmd;
-        ScriptableRenderContext renderContext = context.renderContext;
+        void Render(RenderGraphContext context)
+        {
+            CommandBuffer buffer = context.cmd;
+            ScriptableRenderContext renderContext = context.renderContext;
         
             copier.CopyByDrawing(
                 buffer, depthAttachment, BuiltinRenderTextureType.CameraTarget, true);
             renderContext.ExecuteCommandBuffer(buffer);
             buffer.Clear();
         
-        renderContext.DrawGizmos(copier.Camera, GizmoSubset.PreImageEffects);
-        renderContext.DrawGizmos(copier.Camera, GizmoSubset.PostImageEffects);
-    }
+            renderContext.DrawGizmos(copier.Camera, GizmoSubset.PreImageEffects);
+            renderContext.DrawGizmos(copier.Camera, GizmoSubset.PostImageEffects);
+        }
 #endif
     
   
-    [Conditional("UNITY_EDITOR")]
-    public static void Record(
-        RenderGraph renderGraph,
-        CameraRendererCopier copier,
-        in CameraRendererTextures textures)
-    {
-#if UNITY_EDITOR
-        if (Handles.ShouldRenderGizmos())
+        [Conditional("UNITY_EDITOR")]
+        public static void Record(
+            RenderGraph renderGraph,
+            CameraRendererCopier copier,
+            in CameraRendererTextures textures)
         {
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                sampler.name, 
-                out GizmosPass pass,
-                sampler);
+#if UNITY_EDITOR
+            if (Handles.ShouldRenderGizmos())
+            {
+                using RenderGraphBuilder builder = renderGraph.AddRenderPass(
+                    Sampler.name, 
+                    out GizmosPass pass,
+                    Sampler);
             
             
-            pass.copier = copier;
-            pass.depthAttachment = builder.ReadTexture(textures.depthAttachment);
+                pass.copier = copier;
+                pass.depthAttachment = builder.ReadTexture(textures.DepthAttachment);
                 
-            builder.SetRenderFunc<GizmosPass>(static (pass, context) => pass.Render(context));
-        }
+                builder.SetRenderFunc<GizmosPass>(static (pass, context) => pass.Render(context));
+            }
 #endif
-    }  
+        }  
+    }
 }

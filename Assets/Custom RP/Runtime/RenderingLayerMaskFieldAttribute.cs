@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
-public class RenderingLayerMaskFieldAttribute : PropertyAttribute
+namespace Custom_RP.Runtime
 {
+    public class RenderingLayerMaskFieldAttribute : PropertyAttribute
+    {
+    }
 }

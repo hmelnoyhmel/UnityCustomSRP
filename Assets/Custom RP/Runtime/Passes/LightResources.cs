@@ -1,22 +1,25 @@
 using UnityEngine.Rendering.RenderGraphModule;
 
-public readonly ref struct LightResources
+namespace Custom_RP.Runtime.Passes
 {
-    public readonly BufferHandle directionalLightDataBuffer;
-    public readonly BufferHandle otherLightDataBuffer;
-    public readonly BufferHandle tilesBuffer;
-	
-    public readonly ShadowResources shadowResources;
-
-    public LightResources(
-        BufferHandle directionalLightDataBuffer,
-        BufferHandle otherLightDataBuffer,
-        BufferHandle tilesBuffer,
-        ShadowResources shadowResources)
+    public readonly ref struct LightResources
     {
-        this.directionalLightDataBuffer = directionalLightDataBuffer;
-        this.otherLightDataBuffer = otherLightDataBuffer;
-        this.tilesBuffer = tilesBuffer;
-        this.shadowResources = shadowResources;
+        public readonly BufferHandle DirectionalLightDataBuffer;
+        public readonly BufferHandle OtherLightDataBuffer;
+        public readonly BufferHandle TilesBuffer;
+	
+        public readonly ShadowResources ShadowResources;
+
+        public LightResources(
+            BufferHandle directionalLightDataBuffer,
+            BufferHandle otherLightDataBuffer,
+            BufferHandle tilesBuffer,
+            ShadowResources shadowResources)
+        {
+            this.DirectionalLightDataBuffer = directionalLightDataBuffer;
+            this.OtherLightDataBuffer = otherLightDataBuffer;
+            this.TilesBuffer = tilesBuffer;
+            this.ShadowResources = shadowResources;
+        }
     }
 }

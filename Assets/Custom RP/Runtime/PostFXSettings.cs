@@ -2,173 +2,176 @@
 using UnityEditor;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Rendering/Custom Post FX Settings")]
-public class PostFXSettings : ScriptableObject
+namespace Custom_RP.Runtime
 {
-    [SerializeField] private Shader shader;
-
-    [SerializeField] private BloomSettings bloom = new()
+    [CreateAssetMenu(menuName = "Rendering/Custom Post FX Settings")]
+    public class PostFXSettings : ScriptableObject
     {
-        scatter = 0.7f
-    };
+        [SerializeField] private Shader shader;
 
-    [SerializeField] private ColorAdjustmentsSettings colorAdjustments = new()
-    {
-        colorFilter = Color.white
-    };
-
-    [SerializeField] private WhiteBalanceSettings whiteBalance;
-
-    [SerializeField] private SplitToningSettings splitToning = new()
-    {
-        shadows = Color.gray,
-        highlights = Color.gray
-    };
-
-    [SerializeField] private ChannelMixerSettings channelMixer = new()
-    {
-        red = Vector3.right,
-        green = Vector3.up,
-        blue = Vector3.forward
-    };
-
-    [SerializeField] private ShadowsMidtonesHighlightsSettings shadowsMidtonesHighlights = new()
-    {
-        shadows = Color.white,
-        midtones = Color.white,
-        highlights = Color.white,
-        shadowsEnd = 0.3f,
-        highlightsStart = 0.55f,
-        highLightsEnd = 1f
-    };
-
-    [SerializeField] private ToneMappingSettings toneMapping;
-
-    [NonSerialized] private Material material;
-
-    public BloomSettings Bloom => bloom;
-
-    public ColorAdjustmentsSettings ColorAdjustments => colorAdjustments;
-
-    public WhiteBalanceSettings WhiteBalance => whiteBalance;
-
-    public SplitToningSettings SplitToning => splitToning;
-
-    public ChannelMixerSettings ChannelMixer => channelMixer;
-
-    public ShadowsMidtonesHighlightsSettings ShadowsMidtonesHighlights =>
-        shadowsMidtonesHighlights;
-
-    public ToneMappingSettings ToneMapping => toneMapping;
-
-    public Material Material
-    {
-        get
+        [SerializeField] private BloomSettings bloom = new()
         {
-            if (material == null && shader != null)
-                material = new Material(shader)
-                {
-                    hideFlags = HideFlags.HideAndDontSave
-                };
-            return material;
-        }
-    }
+            scatter = 0.7f
+        };
 
-    [Serializable]
-    public struct BloomSettings
-    {
-        public enum Mode
+        [SerializeField] private ColorAdjustmentsSettings colorAdjustments = new()
         {
-            Additive,
-            Scattering
+            colorFilter = Color.white
+        };
+
+        [SerializeField] private WhiteBalanceSettings whiteBalance;
+
+        [SerializeField] private SplitToningSettings splitToning = new()
+        {
+            shadows = Color.gray,
+            highlights = Color.gray
+        };
+
+        [SerializeField] private ChannelMixerSettings channelMixer = new()
+        {
+            red = Vector3.right,
+            green = Vector3.up,
+            blue = Vector3.forward
+        };
+
+        [SerializeField] private ShadowsMidtonesHighlightsSettings shadowsMidtonesHighlights = new()
+        {
+            shadows = Color.white,
+            midtones = Color.white,
+            highlights = Color.white,
+            shadowsEnd = 0.3f,
+            highlightsStart = 0.55f,
+            highLightsEnd = 1f
+        };
+
+        [SerializeField] private ToneMappingSettings toneMapping;
+
+        [NonSerialized] private Material material;
+
+        public BloomSettings Bloom => bloom;
+
+        public ColorAdjustmentsSettings ColorAdjustments => colorAdjustments;
+
+        public WhiteBalanceSettings WhiteBalance => whiteBalance;
+
+        public SplitToningSettings SplitToning => splitToning;
+
+        public ChannelMixerSettings ChannelMixer => channelMixer;
+
+        public ShadowsMidtonesHighlightsSettings ShadowsMidtonesHighlights =>
+            shadowsMidtonesHighlights;
+
+        public ToneMappingSettings ToneMapping => toneMapping;
+
+        public Material Material
+        {
+            get
+            {
+                if (material == null && shader != null)
+                    material = new Material(shader)
+                    {
+                        hideFlags = HideFlags.HideAndDontSave
+                    };
+                return material;
+            }
         }
 
-        public bool ignoreRenderScale;
-
-        [Range(0f, 16f)] public int maxIterations;
-
-        [Min(1f)] public int downscaleLimit;
-
-        public bool bicubicUpsampling;
-
-        [Min(0f)] public float threshold;
-
-        [Range(0f, 1f)] public float thresholdKnee;
-
-        [Min(0f)] public float intensity;
-
-        public bool fadeFireflies;
-
-        public Mode mode;
-
-        [Range(0.05f, 0.95f)] public float scatter;
-    }
-
-    [Serializable]
-    public struct ColorAdjustmentsSettings
-    {
-        public float postExposure;
-
-        [Range(-100f, 100f)] public float contrast;
-
-        [ColorUsage(false, true)] public Color colorFilter;
-
-        [Range(-180f, 180f)] public float hueShift;
-
-        [Range(-100f, 100f)] public float saturation;
-    }
-
-    [Serializable]
-    public struct WhiteBalanceSettings
-    {
-        [Range(-100f, 100f)] public float temperature, tint;
-    }
-
-    [Serializable]
-    public struct SplitToningSettings
-    {
-        [ColorUsage(false)] public Color shadows, highlights;
-
-        [Range(-100f, 100f)] public float balance;
-    }
-
-    [Serializable]
-    public struct ChannelMixerSettings
-    {
-        public Vector3 red, green, blue;
-    }
-
-    [Serializable]
-    public struct ShadowsMidtonesHighlightsSettings
-    {
-        [ColorUsage(false, true)] public Color shadows, midtones, highlights;
-
-        [Range(0f, 2f)] public float shadowsStart, shadowsEnd, highlightsStart, highLightsEnd;
-    }
-
-    [Serializable]
-    public struct ToneMappingSettings
-    {
-        public enum Mode
+        [Serializable]
+        public struct BloomSettings
         {
-            None,
-            ACES,
-            Neutral,
-            Reinhard
+            public enum Mode
+            {
+                Additive,
+                Scattering
+            }
+
+            public bool ignoreRenderScale;
+
+            [Range(0f, 16f)] public int maxIterations;
+
+            [Min(1f)] public int downscaleLimit;
+
+            public bool bicubicUpsampling;
+
+            [Min(0f)] public float threshold;
+
+            [Range(0f, 1f)] public float thresholdKnee;
+
+            [Min(0f)] public float intensity;
+
+            public bool fadeFireflies;
+
+            public Mode mode;
+
+            [Range(0.05f, 0.95f)] public float scatter;
         }
 
-        public Mode mode;
-    }
+        [Serializable]
+        public struct ColorAdjustmentsSettings
+        {
+            public float postExposure;
+
+            [Range(-100f, 100f)] public float contrast;
+
+            [ColorUsage(false, true)] public Color colorFilter;
+
+            [Range(-180f, 180f)] public float hueShift;
+
+            [Range(-100f, 100f)] public float saturation;
+        }
+
+        [Serializable]
+        public struct WhiteBalanceSettings
+        {
+            [Range(-100f, 100f)] public float temperature, tint;
+        }
+
+        [Serializable]
+        public struct SplitToningSettings
+        {
+            [ColorUsage(false)] public Color shadows, highlights;
+
+            [Range(-100f, 100f)] public float balance;
+        }
+
+        [Serializable]
+        public struct ChannelMixerSettings
+        {
+            public Vector3 red, green, blue;
+        }
+
+        [Serializable]
+        public struct ShadowsMidtonesHighlightsSettings
+        {
+            [ColorUsage(false, true)] public Color shadows, midtones, highlights;
+
+            [Range(0f, 2f)] public float shadowsStart, shadowsEnd, highlightsStart, highLightsEnd;
+        }
+
+        [Serializable]
+        public struct ToneMappingSettings
+        {
+            public enum Mode
+            {
+                None,
+                Aces,
+                Neutral,
+                Reinhard
+            }
+
+            public Mode mode;
+        }
     
-    public static bool AreApplicableTo(Camera camera)
-    {
-#if UNITY_EDITOR
-        if (camera.cameraType == CameraType.SceneView &&
-            !SceneView.currentDrawingSceneView.sceneViewState.showImageEffects)
+        public static bool AreApplicableTo(Camera camera)
         {
-            return false;
-        }
+#if UNITY_EDITOR
+            if (camera.cameraType == CameraType.SceneView &&
+                !SceneView.currentDrawingSceneView.sceneViewState.showImageEffects)
+            {
+                return false;
+            }
 #endif
-        return camera.cameraType <= CameraType.SceneView;
+            return camera.cameraType <= CameraType.SceneView;
+        }
     }
 }

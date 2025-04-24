@@ -3,92 +3,95 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
 using UnityEngine.Rendering.RenderGraphModule;
 
-public class GeometryPass
+namespace Custom_RP.Runtime.Passes
 {
-    private static readonly ProfilingSampler samplerOpaque = new("Opaque Geometry");
-    static readonly ProfilingSampler samplerTransparent = new("Transparent Geometry");
-
-    static readonly ShaderTagId[] shaderTagIds = {
-        new("SRPDefaultUnlit"),
-        new("CustomLit")
-    };
-
-    RendererListHandle list;
-
-    void Render(RenderGraphContext context)
+    public class GeometryPass
     {
-        context.cmd.DrawRendererList(list);
-        context.renderContext.ExecuteCommandBuffer(context.cmd);
-        context.cmd.Clear();
-    }
+        private static readonly ProfilingSampler SamplerOpaque = new("Opaque Geometry");
+        static readonly ProfilingSampler SamplerTransparent = new("Transparent Geometry");
 
-    public static void Record(
-        RenderGraph renderGraph, 
-        Camera camera, 
-        CullingResults cullingResults,
-        uint renderingLayerMask, 
-        bool opaque, 
-        in CameraRendererTextures textures, 
-        in LightResources lightData)
-    {
-        ProfilingSampler sampler = opaque ? samplerOpaque : samplerTransparent;
+        static readonly ShaderTagId[] ShaderTagIds = 
+        {
+            new("CustomLit")
+        };
+
+        RendererListHandle list;
+
+        void Render(RenderGraphContext context)
+        {
+            context.cmd.DrawRendererList(list);
+            context.renderContext.ExecuteCommandBuffer(context.cmd);
+            context.cmd.Clear();
+        }
+
+        public static void Record(
+            RenderGraph renderGraph, 
+            Camera camera, 
+            CullingResults cullingResults,
+            uint renderingLayerMask, 
+            bool opaque, 
+            in CameraRendererTextures textures, 
+            in LightResources lightData)
+        {
+            ProfilingSampler sampler = opaque ? SamplerOpaque : SamplerTransparent;
         
-        using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-            sampler.name, 
-            out GeometryPass pass, 
-            sampler);
+            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
+                sampler.name, 
+                out GeometryPass pass, 
+                sampler);
 		
-        var rednderlist = renderGraph.CreateRendererList(
-            new RendererListDesc(shaderTagIds, cullingResults, camera)
-            {
-                sortingCriteria = opaque ? 
-                    SortingCriteria.CommonOpaque : SortingCriteria.CommonTransparent,
+            var rednderlist = renderGraph.CreateRendererList(
+                new RendererListDesc(ShaderTagIds, cullingResults, camera)
+                {
+                    sortingCriteria = opaque ? 
+                        SortingCriteria.CommonOpaque : SortingCriteria.CommonTransparent,
                 
-                rendererConfiguration =
-                    PerObjectData.ReflectionProbes |
-                    PerObjectData.Lightmaps |
-                    PerObjectData.ShadowMask |
-                    PerObjectData.LightProbe |
-                    PerObjectData.OcclusionProbe |
-                    PerObjectData.LightProbeProxyVolume |
-                    PerObjectData.OcclusionProbeProxyVolume,
+                    rendererConfiguration =
+                        PerObjectData.ReflectionProbes |
+                        PerObjectData.Lightmaps |
+                        PerObjectData.ShadowMask |
+                        PerObjectData.LightProbe |
+                        PerObjectData.OcclusionProbe |
+                        PerObjectData.LightProbeProxyVolume |
+                        PerObjectData.OcclusionProbeProxyVolume,
                 
-                renderQueueRange = opaque ?
-                    RenderQueueRange.opaque : RenderQueueRange.transparent,
-                renderingLayerMask = (uint)renderingLayerMask
-            });
+                    renderQueueRange = opaque ?
+                        RenderQueueRange.opaque : RenderQueueRange.transparent,
+                    renderingLayerMask = (uint)renderingLayerMask
+                });
 
-        pass.list = builder.UseRendererList(rednderlist);
+            pass.list = builder.UseRendererList(rednderlist);
         
-        builder.ReadWriteTexture(textures.colorAttachment);
-        builder.ReadWriteTexture(textures.depthAttachment);
+            builder.ReadWriteTexture(textures.ColorAttachment);
+            builder.ReadWriteTexture(textures.DepthAttachment);
         
-        if (!opaque)
-        {
-            if (textures.colorCopy.IsValid())
+            if (!opaque)
             {
-                builder.ReadTexture(textures.colorCopy);
+                if (textures.ColorCopy.IsValid())
+                {
+                    builder.ReadTexture(textures.ColorCopy);
+                }
+                if (textures.DepthCopy.IsValid())
+                {
+                    builder.ReadTexture(textures.DepthCopy);
+                }
             }
-            if (textures.depthCopy.IsValid())
+        
+        
+            builder.ReadBuffer(lightData.DirectionalLightDataBuffer);
+            builder.ReadBuffer(lightData.OtherLightDataBuffer);
+            if (lightData.TilesBuffer.IsValid())
             {
-                builder.ReadTexture(textures.depthCopy);
+                builder.ReadBuffer(lightData.TilesBuffer);
             }
+            builder.ReadTexture(lightData.ShadowResources.DirectionalAtlas);
+        
+            builder.ReadTexture(lightData.ShadowResources.OtherAtlas);
+            builder.ReadBuffer(lightData.ShadowResources.DirectionalShadowCascadesBuffer);
+            builder.ReadBuffer(lightData.ShadowResources.DirectionalShadowMatricesBuffer);
+            builder.ReadBuffer(lightData.ShadowResources.OtherShadowDataBuffer);
+        
+            builder.SetRenderFunc<GeometryPass>(static (pass, context) => pass.Render(context));
         }
-        
-        
-        builder.ReadBuffer(lightData.directionalLightDataBuffer);
-        builder.ReadBuffer(lightData.otherLightDataBuffer);
-        if (lightData.tilesBuffer.IsValid())
-        {
-            builder.ReadBuffer(lightData.tilesBuffer);
-        }
-        builder.ReadTexture(lightData.shadowResources.directionalAtlas);
-        
-        builder.ReadTexture(lightData.shadowResources.otherAtlas);
-        builder.ReadBuffer(lightData.shadowResources.directionalShadowCascadesBuffer);
-        builder.ReadBuffer(lightData.shadowResources.directionalShadowMatricesBuffer);
-        builder.ReadBuffer(lightData.shadowResources.otherShadowDataBuffer);
-        
-        builder.SetRenderFunc<GeometryPass>(static (pass, context) => pass.Render(context));
     }
 }

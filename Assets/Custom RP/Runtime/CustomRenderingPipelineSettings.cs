@@ -1,37 +1,40 @@
 using UnityEngine;
 
-[System.Serializable]
-public class CustomRenderPipelineSettings
+namespace Custom_RP.Runtime
 {
-    public CameraBufferSettings cameraBuffer = new()
+    [System.Serializable]
+    public class CustomRenderPipelineSettings
     {
-        allowHDR = true,
-        renderScale = 1f,
-        fxaa = new()
+        public CameraBufferSettings cameraBuffer = new()
         {
-            fixedThreshold = 0.0833f,
-            relativeThreshold = 0.166f,
-            subpixelBlending = 0.75f
-        }
-    };
+            allowHDR = true,
+            renderScale = 1f,
+            fxaa = new()
+            {
+                fixedThreshold = 0.0833f,
+                relativeThreshold = 0.166f,
+                subpixelBlending = 0.75f
+            }
+        };
 
-    public bool useSRPBatcher = true;
+        public bool useSrpBatcher = true;
     
-    public ForwardPlusSettings forwardPlus;
+        public ForwardPlusSettings forwardPlus;
 
-    public ShadowSettings shadows;
+        public ShadowSettings shadows;
 
-    public PostFXSettings postFXSettings;
+        public PostFXSettings postFXSettings;
 
-    public enum ColorLUTResolution
-    {
-        _16 = 16, 
-        _32 = 32, 
-        _64 = 64
+        public enum ColorLutResolution
+        {
+            _16 = 16, 
+            _32 = 32, 
+            _64 = 64
+        }
+
+        public ColorLutResolution colorLutResolution = ColorLutResolution._32;
+
+        public Shader cameraRendererShader;
+        public Shader cameraDebuggerShader;
     }
-
-    public ColorLUTResolution colorLUTResolution = ColorLUTResolution._32;
-
-    public Shader cameraRendererShader;
-    public Shader cameraDebuggerShader;
 }
